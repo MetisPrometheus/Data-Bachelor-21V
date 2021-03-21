@@ -19,7 +19,7 @@ class MainApp(qtw.QApplication):
 	def __init__(self, argv):
 		super().__init__(argv)
 
-		# -------- Windows & Objects --------
+		# -------- Windows & Controllers --------
 		#create main window
 		self.main_window = MainWindow()
 
@@ -31,25 +31,26 @@ class MainApp(qtw.QApplication):
 		self.data_controller = DataController()
 
 
-		# -------- Signals and slots --------
-		#Receives the filepath for the dataset and sends it to the datacontroller
-		self.initial_window.dataset_path_submitted[str].connect(self.data_controller.setDir)
-
-		#Receives the index for the new patient file chosen and sends it to the datacontroller
-		self.main_window.new_case_index[int].connect(self.data_controller.getCaseData)
-
-		#Receives the show/hide state of a checkbox and sends it to the mainwindow
-		self.main_window.graph_toggle.connect(self.main_window.showGraph)
+		# -------- Signals & Slots --------
+		#Receive filepath from initial window and send it to the datacontroller
+		self.initial_window.directory_submitted[str].connect(self.data_controller.setDirectory)
 
 		#Receive case data from the controller and pass on to mainwindow
-		self.data_controller.case_data_submitted.connect(self.main_window.plotGraphs)
-		self.data_controller.case_data_submitted.connect(self.main_window.createCheckboxes)
-		self.data_controller.case_data_submitted.connect(self.main_window.show)
+		self.data_controller.case_submitted.connect(self.main_window.receiveNewCase)
+		self.data_controller.case_submitted.connect(self.main_window.show)
 
 		#Receive case filenames and pass on to mainwindow to fill the dropdown menu
-		self.data_controller.case_files_submitted.connect(self.main_window.showCases)
-		
-		self.main_window.slider_incs_submitted.connect(self.main_window.setSlider)
+		self.data_controller.filenames_submitted.connect(self.main_window.receiveFilenames)
+
+		#Receives the index for the new patient file chosen and sends it to the datacontroller
+		self.main_window.MW_Controls.new_case_index[int].connect(self.data_controller.getCase)
+
+		#Receives the show/hide state of a checkbox and sends it to the mainwindow
+		self.main_window.MW_Controls.checkbox_state.connect(self.main_window.MW_GraphCollection.toggleGraph)
+
+		# self.main_window.slider_incs_submitted.connect(self.main_window.setSlider)
+		# self.main_window.span_submitted.connect(self.main_window.plotSpan)
+
 
 if __name__ == "__main__":
 	app = MainApp(sys.argv)	

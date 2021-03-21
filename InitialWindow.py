@@ -4,39 +4,40 @@ from PyQt5 import QtCore as qtc
 
 class InitialWindow(qtw.QWidget):
 
-	dataset_path_submitted = qtc.pyqtSignal(str)
+	directory_submitted = qtc.pyqtSignal(str)
+
+	DIRECTORY_NAME = "2 DATASET" 
 
 	def __init__(self):
 		super().__init__()
-		self.launch = qtw.QPushButton("Launch", clicked=self.getDirectory)
-		self.button = qtw.QPushButton("ChangeDirectory", clicked=self.changeDirectory)
+		self.launch = qtw.QPushButton("Launch", clicked=self.launchGUI)
+		self.button = qtw.QPushButton("ChangeDirectory", clicked=self.getDirectory)
 
 		self.setLayout(qtw.QVBoxLayout())
 		self.layout().addWidget(self.launch)
 		self.layout().addWidget(self.button)
 
-	def getDirectory(self):
-		if "folders.txt" in next(os.walk(os.getcwd()))[2]:
-			with open("folders.txt", "r") as f:
+	def launchGUI(self):
+		if "settings.txt" in next(os.walk(os.getcwd()))[2]:
+			with open("settings.txt", "r") as f:
+
+				#FIX JSON FORMAT
+
 				dir_path = f.readlines()[0]
-				self.dataset_path_submitted.emit(dir_path)
-			pass
+				self.directory_submitted.emit(dir_path)
 		else: 
-			with open("folders.txt", "w") as f:
-				dir_path = qtw.QFileDialog.getExistingDirectory()
-				dir_name = dir_path.split("/")[-1]
-				if dir_name == "2 DATASET":
-					f.write(dir_path)
-					self.dataset_path_submitted.emit(dir_path)
-				else:
-					print("Incorrect folder chosen") 
+			self.getDirectory()
 		self.close()
 
-	def changeDirectory(self):
-		dir_path = qtw.QFileDialog.getExistingDirectory()
-		dir_name = dir_path.split("/")[-1]
-		if dir_name == "2 DATASET":
-			f.write(dir_path)
-			self.dataset_path_submitted.emit(dir_path)
-		else:
-			print("Incorrect folder chosen") 
+	def getDirectory(self):
+		with open("settings.txt", "w") as f:
+			dir_path = qtw.QFileDialog.getExistingDirectory()
+			dir_name = dir_path.split("/")[-1]
+			if dir_name == self.DIRECTORY_NAME:
+
+				#FIX JSON FORMAT
+
+				f.write(dir_path)
+				self.directory_submitted.emit(dir_path)
+			else:
+				print("Incorrect folder chosen") 
