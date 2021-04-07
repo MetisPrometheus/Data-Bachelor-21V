@@ -14,6 +14,7 @@ class MainWindow(qtw.QWidget):
 
 	def __init__(self):
 		super().__init__()
+		self.setWindowTitle("Main Window")
 
 		# -------- Main Window Sections --------
 		self.MW_Controls = MW_Controls()
@@ -31,9 +32,7 @@ class MainWindow(qtw.QWidget):
 
 
 	def receiveNewCase(self, data, new_case_index):
-		self.MW_Controls.createCheckboxes(data)
 		self.MW_GraphCollection.plotGraphs(data, new_case_index)
-		self.MW_GraphCollection.computeIncrements(data)
 
 	def receiveFilenames(self, filenames):
 		self.MW_Controls.showCases(filenames)

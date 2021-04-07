@@ -3,7 +3,7 @@ import sys
 import os
 
 #3rd Party Libraries
-import pyqtgraph as pg
+#import pyqtgraph as pg
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
 from mat4py import loadmat
@@ -13,7 +13,6 @@ from MainWindow import MainWindow
 from InitialWindow import InitialWindow
 from DataController import DataController
 
-
 class MainApp(qtw.QApplication):
 	#Main Application Object
 	def __init__(self, argv):
@@ -22,7 +21,7 @@ class MainApp(qtw.QApplication):
 		# -------- Windows & Controllers --------
 		#create main window
 		self.main_window = MainWindow()
-
+		
 		#create initial window
 		self.initial_window = InitialWindow()
 		self.initial_window.show()

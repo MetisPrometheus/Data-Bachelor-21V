@@ -43,31 +43,17 @@ class MW_GraphCollection(qtw.QWidget):
 		self.slider_incs_submitted.emit(increments)
 
 	def plotSpan(self, new_span_value):
-		print(new_span_value)
 		for key, graphObj in self.graphs.items():
 			graphObj.setSpan(new_span_value)	
 
-	def computeIncrements(self, data):
-		pass
-
 	#case received from mainapp
 	def plotGraphs(self, case, new_case_index):
-
-
-		for key, value in case["data"].items():
-			print(key)
-
-
-
 		if not new_case_index:
 			for key, value in case["data"].items():
 				self.graphs[key] = PlotGraph(value)
 				self.graphs[key].slider_incs_submitted.connect(self.setIncrements)
 				self.body_layout.addWidget(self.graphs[key])
 				self.graphs[key].hide()
-
-			# for key, graphObj in self.graphs.items():
-				
 		else:
 			#Loop through existing graphwidgets and pass in new data
 			for key, graphObj in self.graphs.items():
@@ -75,7 +61,6 @@ class MW_GraphCollection(qtw.QWidget):
 				graphObj.storeData(case[key])		
 
 	def toggleGraph(self, checkvalue, state):
-		print(f"type:{checkvalue}, state:{state}")
 		if state:
 			self.graphs[checkvalue].show()
 		else: 

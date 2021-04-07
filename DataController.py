@@ -20,8 +20,6 @@ class DataController(qtw.QWidget):
 
 	def __init__(self):
 		super().__init__()
-		print("--- DataController Initialized ---")
-
 
 	def setDirectory(self, directory_path):
 		self.DATASET_FILEPATH = directory_path
@@ -33,8 +31,7 @@ class DataController(qtw.QWidget):
 		path_LP = f"{self.DATASET_FILEPATH}/{self.SUBSET1}"
 		path_BCP = f"{self.DATASET_FILEPATH}/{self.SUBSET2}"
 		_, _, case_files = next(os.walk(path_LP))
-		# _, _, casePaths2 = next(os.walk(path_BCP))  #(not needed if you assume LP and BCP files are matching)
-		
+
 		#Remove non ("%CASE%".mat) files from the (case_files) list
 		case_files[:] = [x for x in case_files if "CASE" in x]
 		return case_files
@@ -60,20 +57,12 @@ class DataController(qtw.QWidget):
 		if not new_case_index:
 			LP_data = loadmat(f"{path_LP}/{case_files[0]}")
 			BCP_data = loadmat(f"{path_BCP}/{case_files[0]}")
-			# self.filenames_submitted.emit(case_files) #Emit filenames to MainApp (Used for dropdown menu)
 		else: 
 			LP_data = loadmat(f"{path_LP}/{case_files[new_case_index]}")
 			BCP_data = loadmat(f"{path_BCP}/{case_files[new_case_index]}")
 
 		#Merge both dictionaries
 		data = {**LP_data["rec"], **BCP_data["rec"]}
-
-		# #For loop to inspect dict hierarchy
-		# for key in data.keys():
-		# 	if isinstance(data[key], list):
-		# 		print("{} - arraylength: {}".format(key, len(data[key])))
-		# 	elif type(data[key]) == int:
-		# 		print("{} - value: {}".format(key, data[key]))
 
 		#Find the length of the longest list
 		max_length = len(data["s_ecg"])
@@ -96,15 +85,7 @@ class DataController(qtw.QWidget):
 				for i in range(0, diff):
 					data[key].append(float('nan'))
 
-		# date = time.ctime(os.path.getmtime(f"{path_LP}/{case_files[0]}"))
-
-		#Send a signal containing the data back to MainApp
-		# self.case_data_submitted.emit(data, new_case_index)
-		# self.close()
 		return data, new_case_index
-
-	def getCsvData(self, new_case_index=False):
-		pass
 
 	#Find and return case information from the original CSV case files
 	def getCaseInfo(self, new_case_index=False):

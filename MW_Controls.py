@@ -7,6 +7,7 @@ class MW_Controls(qtw.QWidget):
 	new_span = qtc.pyqtSignal(int)
 	new_case_index = qtc.pyqtSignal(int)
 	checkbox_state = qtc.pyqtSignal(str, bool)
+	button_pressed = qtc.pyqtSignal(bool)
 
 	def __init__(self):
 		super().__init__()
@@ -30,6 +31,7 @@ class MW_Controls(qtw.QWidget):
 		self.checkboxes["s_bcg2"] = qtw.QCheckBox("bcg2", clicked=lambda:self.emitCheckboxState("s_bcg2"))
 
 		self.check_layout = qtw.QHBoxLayout()
+		self.settings_button = qtw.QPushButton("Settings")
 		self.check_layout.addWidget(self.checkboxes["s_ecg"])
 		self.check_layout.addWidget(self.checkboxes["s_CO2"])
 		self.check_layout.addWidget(self.checkboxes["s_ppg"])
@@ -37,10 +39,13 @@ class MW_Controls(qtw.QWidget):
 		self.check_layout.addWidget(self.checkboxes["s_vent"])
 		self.check_layout.addWidget(self.checkboxes["s_bcg1"])
 		self.check_layout.addWidget(self.checkboxes["s_bcg2"])
+		self.check_layout.addWidget(self.settings_button)
+		
 
 		self.dropdown_layout = qtw.QHBoxLayout()
 		self.dropdown_layout.addWidget(self.dropdown_cases)
 		self.dropdown_layout.addWidget(self.dropdown_span)
+		self.dropdown_layout.addWidget(self.settings_button)
 
 		self.top_layout = qtw.QHBoxLayout()
 		self.top_layout.addLayout(self.dropdown_layout)
@@ -49,7 +54,6 @@ class MW_Controls(qtw.QWidget):
 
 
 	def emitCaseIndex(self, new_case_index):
-		print(f"User changed to new case with index: {new_case_index}")
 		self.new_case_index.emit(new_case_index)
 
 	def emitNewSpan(self, new_span_value):
@@ -60,16 +64,8 @@ class MW_Controls(qtw.QWidget):
 		state = self.checkboxes[value].isChecked()
 		self.checkbox_state.emit(value, state)
 
-	def createCheckboxes(self, data):
-		# for key in data.keys():ar
-		# 	ph = key.split("_")[-1]
-		# 	self.checkboxes[key] = qtw.QCheckBox(f"{ph}", clicked=lambda:self.graphToggler(f"{key}"))
-		# 	self.check_layout.addWidget(self.checkboxes[key])
-		pass
-
 	#Populate the dropdown menu with the various patient's case.mat files
 	def showCases(self, filenames):
 		self.dropdown_cases.blockSignals(True)
 		self.dropdown_cases.insertItems(0, filenames)
 		self.dropdown_cases.blockSignals(False)
-

@@ -1,12 +1,11 @@
 #Standard Libraries
 import math
+import numpy
+from mat4py import loadmat
 
 #3rd Party Libraries
 import pyqtgraph as pg
 from PyQt5 import QtCore as qtc
-
-# import vispy.mpl_plot as plt
-from vispy import scene
 
 
 class PlotGraph(pg.PlotWidget):
@@ -14,14 +13,16 @@ class PlotGraph(pg.PlotWidget):
 	data = None
 	frequency = 250
 	span = 60
-
 	slider_incs_submitted = qtc.pyqtSignal(int)
+	filepath = "Z:/users/empie/5 ANNOTATIONS/"
+	SUBSET_ANNOTATIONS = "1 GUI data/"
+	DATASET = loadmat(filepath + SUBSET_ANNOTATIONS + "metadata.mat").get("metadata")
 
 	def __init__(self, data):
 		super().__init__()
-		# pg.setConfigOption("background", "w")
-		# pg.setConfigOption("foreground", "k")
+		self.setBackground('w')
 		self.storeData(data)
+		
 
 	def storeData(self, data):
 		self.data = data
@@ -32,13 +33,30 @@ class PlotGraph(pg.PlotWidget):
 		self.clear()
 		self.plotSection()
 
-	def computeIncrements(self, data):
-		pass
+	def getList(self, case, variable):
+		caseNumber = self.DATASET["reg_name"].index(case)
+		return self.DATASET[variable][caseNumber]
+
+	def getValue(self, case, variable):
+		caseNumber = self.DATASET["reg_name"].index(case)
+		return self.DATASET[variable][caseNumber]
+
+	def plotCOPoints(self, case):
+		t_cap = self.getList(case, "t_cap")
+		t_CO2 = self.getValue(case, "t_CO2")
+		n_min = []
+		n_max = []
+		t_min = []
+		t_max = []
+		for item in t_cap:
+			n_min.append(int(round(item[0]*self.frequency)) + 1)
+			t_min.append(item[0] + t_CO2)
+			n_max.append(int(round(item[1]*self.frequency)) + 1)
+			t_max.append(item[1] + t_CO2)
+		#TODO plott inn min og maks punkter på graf. For eks: graphDot(x=t_min, y=s_CO2(n_min)), graphDot(x=t_max, y=s_CO2(n_max))
+
 
 	def plotSection(self, slider_value=0):
-		print(f"slider_value: {slider_value}")
-		print(f"datapoints: {len(self.data)}")
-
 		#Calculate window_length based on frequency (250) and timeframe (60)
 		data_length = len(self.data) #(~550_000)
 		window_length = self.frequency*self.span
@@ -60,4 +78,4 @@ class PlotGraph(pg.PlotWidget):
 			y_start = y_end - window_length
 
 		time = list(range(y_start, y_end))
-		self.plot(time, self.data[y_start:y_end])
+		self.plot(self.data)
