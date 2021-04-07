@@ -14,6 +14,8 @@ class DataController(qtw.QWidget):
 	SUBSET1 = "1 LP15/MAT"
 	SUBSET2 = "2 BCG/MAT"
 	CSV = "2 BCG/CSV"
+	#For annotations
+	SUBSET_ANNOTATIONS = "1 GUI data"
 
 	filenames_submitted = qtc.pyqtSignal(list)
 	case_submitted = qtc.pyqtSignal(dict, bool)
