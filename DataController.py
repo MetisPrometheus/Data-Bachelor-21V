@@ -1,6 +1,7 @@
 #Standard Libraries
 import os
 import time
+import json
 
 #3rd Party Libraries
 from PyQt5 import QtWidgets as qtw
@@ -15,18 +16,27 @@ class DataController(qtw.QWidget):
 	SUBSET2 = "2 BCG/MAT"
 	CSV = "2 BCG/CSV"
 
+	#Initial Case
 	filenames_submitted = qtc.pyqtSignal(list)
-	case_submitted = qtc.pyqtSignal(dict, bool)
+
+	#Every Case
+	case_submitted = qtc.pyqtSignal(dict)
+
+	settings = {}
 
 	def __init__(self):
 		super().__init__()
 		print("--- DataController Initialized ---")
 
+	def receiveSettings(self, saved_settings):
+		self.settings = saved_settings
+		self.DATASET_FILEPATH = self.settings["dataset"]
 
-	def setDirectory(self, directory_path):
-		self.DATASET_FILEPATH = directory_path
+		#Explain later
 		self.filenames_submitted.emit(self.getCaseNames())
-		self.getCase()
+
+		#Since this is the first case -> new_index = False (default value)
+		case = self.getCase()
 
 
 	def getCaseNames(self):
@@ -39,17 +49,35 @@ class DataController(qtw.QWidget):
 		case_files[:] = [x for x in case_files if "CASE" in x]
 		return case_files
 
-
 	def getCase(self, new_case_index=False, filetype="mat"):
 		case = {}
+		#Get case info from the original csv files
 		case["info"] = self.getCaseInfo()
 
+		#Get case data from either the mat files or csv files
 		if filetype == "mat":
-			case["data"], index = self.getMatData(new_case_index)
+			case["data"] = self.getMatData(new_case_index)
 		elif filetype == "csv":
-			case["data"], index = self.getCsvData(new_case_index)
-		self.case_submitted.emit(case, index)
+			case["data"] = self.getCsvData(new_case_index)
+		case["new_index"] = new_case_index #False if first case
 
+		#New data signals will be saved to the settings for ease of later plotting
+		self.saveCheckboxStates(list(case["data"].keys()))
+
+		#Pass along the settings received from 
+		case["settings"] = self.settings
+		
+		#Submit the case to the mainwindow for the GUI to be created using the data provided
+		self.case_submitted.emit(case)
+
+	def saveCheckboxStates(self, checkboxes):
+		with open("settings.txt", "w") as f:
+			for element in checkboxes:
+				#New data signals are added and set to False and will not overwrite previously saved signals
+				if element not in self.settings["checkboxes"]:
+					self.settings["checkboxes"][element] = False
+			#Save the settings to a txt.file in JSON format located in the same directory as the .exe file
+			json.dump(self.settings, f)
 
 	def getMatData(self, new_case_index=False):
 		path_LP = f"{self.DATASET_FILEPATH}/{self.SUBSET1}"
@@ -68,7 +96,7 @@ class DataController(qtw.QWidget):
 		#Merge both dictionaries
 		data = {**LP_data["rec"], **BCP_data["rec"]}
 
-		# #For loop to inspect dict hierarchy
+		#For loop to inspect dict hierarchy
 		# for key in data.keys():
 		# 	if isinstance(data[key], list):
 		# 		print("{} - arraylength: {}".format(key, len(data[key])))
@@ -96,12 +124,8 @@ class DataController(qtw.QWidget):
 				for i in range(0, diff):
 					data[key].append(float('nan'))
 
-		# date = time.ctime(os.path.getmtime(f"{path_LP}/{case_files[0]}"))
-
-		#Send a signal containing the data back to MainApp
-		# self.case_data_submitted.emit(data, new_case_index)
-		# self.close()
-		return data, new_case_index
+		self.saveCheckboxStates(data.keys())
+		return data
 
 	def getCsvData(self, new_case_index=False):
 		pass
@@ -113,7 +137,7 @@ class DataController(qtw.QWidget):
 		if not new_case_index:
 			path = f"{path}/T1V_1.csv"
 		else:
-			path = f"{path}/T1V_1.csv"
+			path = f"{path}/T{new_case_index}V_1.csv"
 
 		info = {}
 		with open(path) as csv_file:
@@ -124,6 +148,6 @@ class DataController(qtw.QWidget):
 
 		for line in csv_info:
 			key = line.split(":", 1)[0].replace("#", "").replace(" ", "_").lower()
-			value = line.split(":", 1)[1].replace("\n","")
+			value = line.split(": ", 1)[1].replace("\n","")
 			info[key] = value
 		return info #dict

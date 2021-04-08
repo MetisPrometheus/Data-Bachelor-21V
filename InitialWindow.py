@@ -1,17 +1,25 @@
+#Standard Libraries
 import os
+import json
+
+#3rd Party Libraries
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
 
+
+
 class InitialWindow(qtw.QWidget):
 
-	directory_submitted = qtc.pyqtSignal(str)
+	settings_submitted = qtc.pyqtSignal(dict)
 
+	#Static variable, this is what the dataset folder is expected to be named
 	DIRECTORY_NAME = "2 DATASET" 
 
 	def __init__(self):
 		super().__init__()
-		self.launch = qtw.QPushButton("Launch", clicked=self.launchGUI)
-		self.button = qtw.QPushButton("ChangeDirectory", clicked=self.getDirectory)
+		print("--- Initial Window Created ---")
+		self.launch = qtw.QPushButton("Start", clicked=self.launchGUI)
+		self.button = qtw.QPushButton("Settings", clicked=self.requestDirectory)
 
 		self.setLayout(qtw.QVBoxLayout())
 		self.layout().addWidget(self.launch)
@@ -19,25 +27,33 @@ class InitialWindow(qtw.QWidget):
 
 	def launchGUI(self):
 		if "settings.txt" in next(os.walk(os.getcwd()))[2]:
-			with open("settings.txt", "r") as f:
-
-				#FIX JSON FORMAT
-
-				dir_path = f.readlines()[0]
-				self.directory_submitted.emit(dir_path)
+			with open("settings.txt", "r") as json_file:
+				#If the file is empty, something is wrong -> default back to asking for a directory
+				if os.path.getsize("settings.txt") <= 2:
+					self.requestDirectory()
+					return
+				#JSON
+				settings = json.load(json_file)
+				#Send settings containing the directory path to the datacontroller
+				self.settings_submitted.emit(settings)
 		else: 
-			self.getDirectory()
+			self.requestDirectory()
 		self.close()
 
-	def getDirectory(self):
-		with open("settings.txt", "w") as f:
-			dir_path = qtw.QFileDialog.getExistingDirectory()
-			dir_name = dir_path.split("/")[-1]
-			if dir_name == self.DIRECTORY_NAME:
+	def requestDirectory(self):
+		dataset_path = qtw.QFileDialog.getExistingDirectory()
+		directory_name = dataset_path.split("/")[-1]
+		if directory_name == self.DIRECTORY_NAME:
+			settings = {}
+			settings["dataset"] = dataset_path
+			settings["annotations"] = "fix dis shit later"
+			settings["checkboxes"] = {}
+			#Send directory path to the datacontroller
+			self.settings_submitted.emit(settings)
+		else:
+			print("Incorrect folder chosen")
+		self.close() 
 
-				#FIX JSON FORMAT
-
-				f.write(dir_path)
-				self.directory_submitted.emit(dir_path)
-			else:
-				print("Incorrect folder chosen") 
+	def closeEvent(self, argv):
+		super().closeEvent(argv)
+		print("||| Initial Window Closed |||")

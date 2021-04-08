@@ -1,3 +1,7 @@
+#Standard Libraries
+import os
+import json
+
 #3rd Party Libraries
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
@@ -14,27 +18,44 @@ class MainWindow(qtw.QWidget):
 
 	def __init__(self):
 		super().__init__()
-
+		print("--- Main Window (GUI) Created ---")
 		# -------- Main Window Sections --------
 		self.MW_Controls = MW_Controls()
 		self.MW_GraphCollection = MW_GraphCollection()
 
+
 		# -------- Signals & Slots -------- 
-		self.MW_Controls.checkbox_state.connect(self.MW_GraphCollection.toggleGraph)
+		#Receive checkbox signal from the controller widget and determine whether to toggle graphs on or off
+		self.MW_Controls.checkbox_signal.connect(self.MW_GraphCollection.receiveCheckboxSignal)
+		
+		#Receive new span and replot the graphs with a bigger or smaller section		
+		self.MW_Controls.new_span.connect(self.MW_GraphCollection.receiveNewSpan)
 
 
+		# -------- Layouts --------
 		#Wrap a main_layout around the top-, body- and bottom part of the GUI
 		self.main_layout = qtw.QVBoxLayout()
 		self.main_layout.addWidget(self.MW_Controls)
 		self.main_layout.addWidget(self.MW_GraphCollection)
 		self.setLayout(self.main_layout)
 
-
-	def receiveNewCase(self, data, new_case_index):
-		self.MW_Controls.createCheckboxes(data)
-		self.MW_GraphCollection.plotGraphs(data, new_case_index)
-		self.MW_GraphCollection.computeIncrements(data)
-
+	#Pass along the received filenames to the controls widget
 	def receiveFilenames(self, filenames):
 		self.MW_Controls.showCases(filenames)
 
+	def receiveNewCase(self, case):
+
+
+		for key, value in case["info"].items():
+			print(f"infokey: {key} --- infovalue: {value}")
+
+		self.MW_Controls.createCheckboxes(case["settings"])
+		self.MW_GraphCollection.setDataLength(len(case["data"]["s_ecg"])) #Can use any signal (same length)
+		self.MW_GraphCollection.plotGraphs(case)
+		# self.MW_GraphCollection.testWidget()
+
+	def closeEvent(self, argv):
+		super().closeEvent(argv)
+		print("||| Main Window (GUI) Closed |||")
+		self.MW_Controls.saveCheckboxStates()
+		

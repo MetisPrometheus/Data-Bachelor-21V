@@ -33,26 +33,27 @@ class MainApp(qtw.QApplication):
 
 		# -------- Signals & Slots --------
 		#Receive filepath from initial window and send it to the datacontroller
-		self.initial_window.directory_submitted[str].connect(self.data_controller.setDirectory)
-
-		#Receive case data from the controller and pass on to mainwindow
-		self.data_controller.case_submitted.connect(self.main_window.receiveNewCase)
-		self.data_controller.case_submitted.connect(self.main_window.show)
+		self.initial_window.settings_submitted[dict].connect(self.data_controller.receiveSettings)
 
 		#Receive case filenames and pass on to mainwindow to fill the dropdown menu
 		self.data_controller.filenames_submitted.connect(self.main_window.receiveFilenames)
 
+		#Receive the case dict from the controller and pass on to mainwindow for the GUI creation/update
+		self.data_controller.case_submitted.connect(self.main_window.receiveNewCase)
+		self.data_controller.case_submitted.connect(self.main_window.show)
+
+
+
+
+
 		#Receives the index for the new patient file chosen and sends it to the datacontroller
 		self.main_window.MW_Controls.new_case_index[int].connect(self.data_controller.getCase)
 
-		#Receives the show/hide state of a checkbox and sends it to the mainwindow
-		self.main_window.MW_Controls.checkbox_state.connect(self.main_window.MW_GraphCollection.toggleGraph)
+		#When the application is closed, save the checkstates of the checkboxes in settings.txt
+		self.main_window.MW_Controls.checkbox_dict.connect(self.data_controller.saveCheckboxStates)
 
-		# self.main_window.slider_incs_submitted.connect(self.main_window.setSlider)
-		# self.main_window.span_submitted.connect(self.main_window.plotSpan)
-
+ 
 
 if __name__ == "__main__":
 	app = MainApp(sys.argv)	
 	sys.exit(app.exec())
-
