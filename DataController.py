@@ -14,7 +14,7 @@ class DataController(qtw.QWidget):
 	ANNOTATIONS_FILEPATH = None
 	SUBSET1 = "/1 LP15/MAT/"
 	SUBSET2 = "/2 BCG/MAT/"
-	SUBSET3 = "/1 GUI DATA/"
+	SUBSET3 = "/1 GUI data/"
 
 	#Loading the metadata.mat file, since it contains all cases.
 	ANNOTATIONS_DATASET = dict()

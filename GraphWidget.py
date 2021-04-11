@@ -69,3 +69,21 @@ class GraphWidget(pg.PlotWidget):
 
 		time = list(range(y_start, y_end))
 		self.plot(time, self.values[y_start:y_end])
+
+	def _plotEKG():
+		pass
+
+	def _plotTTI():
+		pass
+
+	def _plotCO2():
+		pass
+
+	def _plotPPG_SPO2():
+		pass
+
+	def _plotBCG1():
+		pass
+
+	def _plotBCG2():
+		pass
