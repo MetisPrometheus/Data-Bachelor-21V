@@ -55,7 +55,7 @@ class GraphWidget(pg.PlotWidget):
 		return self.plotCases
 
 	def computeIncrements(self):
-		data_length = len(self.values) #(~550_000)
+		data_length = len(self.values[self.getName()]) #(~550_000)
 		#Calculate window_length based on frequency (250) and timeframe (60)
 		self.window_length = self.frequency*self.span
 		complete_sections = math.floor(data_length/self.window_length) - 1

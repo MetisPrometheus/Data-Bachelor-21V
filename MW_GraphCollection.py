@@ -180,7 +180,7 @@ class MW_GraphCollection(qtw.QWidget):
 				# graphObj.clear()
 				graphObj.setStartTime(date, time)
 				graphObj.setFrequency(sample_rate)
-				graphObj.storeData(case[signal])
+				graphObj.storeData(case)
 
 			#If new case contains a signal not previously used, create a new graphwidget for it
 			for key in case["settings"]["checkboxes"].keys():
