@@ -35,11 +35,10 @@ class GraphWidget(pg.PlotWidget):
 		self.span = new_span
 
 	def setFrequency(self, sample_rate):
-		frequency = int(sample_rate.replace("Hz",""))
+		frequency = int(sample_rate)
 		self.frequency = frequency
 
-	def setStartTime(self, date_time):
-		date, time = date_time.split(" ", 1)
+	def setStartTime(self, date, time):
 		print(f"date: {date}, time: {time}")
 		self.start_time = time
 

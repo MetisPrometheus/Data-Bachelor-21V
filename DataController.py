@@ -7,14 +7,21 @@ import json
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
 from mat4py import loadmat
-
+import numpy as np
 
 class DataController(qtw.QWidget):
-
 	DATASET_FILEPATH = None
-	SUBSET1 = "1 LP15/MAT"
-	SUBSET2 = "2 BCG/MAT"
-	CSV = "2 BCG/CSV"
+	ANNOTATIONS_FILEPATH = None
+	SUBSET1 = "/1 LP15/MAT/"
+	SUBSET2 = "/2 BCG/MAT/"
+	SUBSET3 = "/1 GUI DATA/"
+
+	#Loading the metadata.mat file, since it contains all cases.
+	ANNOTATIONS_DATASET = dict()
+	
+	#Based on the casefiles in the metadata.mat structure,  
+	#create a sorted list of case names.
+	CASE_NAMES = []
 
 	#Initial Case
 	filenames_submitted = qtc.pyqtSignal(list)
@@ -31,44 +38,68 @@ class DataController(qtw.QWidget):
 	def receiveSettings(self, saved_settings):
 		self.settings = saved_settings
 		self.DATASET_FILEPATH = self.settings["dataset"]
+		self.ANNOTATIONS_FILEPATH = self.settings["annotations"]
+		annotations = loadmat(self.ANNOTATIONS_FILEPATH + self.SUBSET3 + "metadata.mat").get("metadata")
+		#Sorting the case files in metadata.mat
+		for i in range(len(annotations) - 1):
+			key = annotations["reg_name"][i]
+			newDict = dict()
+			for k in annotations:
+				if k == "reg_name":
+					continue
+				newDict.update({k: annotations[k][i]})
+			self.ANNOTATIONS_DATASET.update({key: newDict})
+		self.CASE_NAMES = list(self.ANNOTATIONS_DATASET.keys())
+		self.getCaseNames().sort()
+		print(self.getCaseNames())
 
 		#Explain later
 		self.filenames_submitted.emit(self.getCaseNames())
 
 		#Since this is the first case -> new_index = False (default value)
-		case = self.getCase()
-
+		self.getCase()
 
 	def getCaseNames(self):
-		path_LP = f"{self.DATASET_FILEPATH}/{self.SUBSET1}"
-		path_BCP = f"{self.DATASET_FILEPATH}/{self.SUBSET2}"
-		_, _, case_files = next(os.walk(path_LP))
-		# _, _, casePaths2 = next(os.walk(path_BCP))  #(not needed if you assume LP and BCP files are matching)
-		
-		#Remove non ("%CASE%".mat) files from the (case_files) list
-		case_files[:] = [x for x in case_files if "CASE" in x]
-		return case_files
+		return self.CASE_NAMES
 
-	def getCase(self, new_case_index=False, filetype="mat"):
-		case = {}
-		#Get case info from the original csv files
-		case["info"] = self.getCaseInfo()
+	def getCase(self, new_case_index = False):
+		dataset = { "new_index": new_case_index }
+		if not new_case_index:
+			new_case_index = 0
+		caseName = self.getCaseNames()[new_case_index]
+		#Create a case file containing BCG, LP15 and metadata data.
+		dataset.update(loadmat(self.DATASET_FILEPATH + self.SUBSET1 + caseName + ".mat").get("rec"))
+		dataset.update(loadmat(self.DATASET_FILEPATH + self.SUBSET2 + caseName + ".mat").get("rec"))
+		dataset.update(self.ANNOTATIONS_DATASET[caseName])
+	
+		#Since MatLab stores some arrays in columns, these 2D-arrays need
+		#to be flattened into vectors. All arrays will also be converted
+		#to Numpty arrays for faster iteration and manipulation.
+		for key, value in dataset.items():
+			#print("key =" + str(key) + " & value = " + str(type(value)))
+			if type(value) is list and type(value[0]) is list and len(value[0]) is 1:
+				dataset[key] = [j for sub in value for j in sub]
+			if type(dataset[key]) is list:
+				dataset[key] = np.array(dataset[key])
 
-		#Get case data from either the mat files or csv files
-		if filetype == "mat":
-			case["data"] = self.getMatData(new_case_index)
-		elif filetype == "csv":
-			case["data"] = self.getCsvData(new_case_index)
-		case["new_index"] = new_case_index #False if first case
-
-		#New data signals will be saved to the settings for ease of later plotting
-		self.saveCheckboxStates(list(case["data"].keys()))
+		#TODO: Signals should perhaps be implemented as is in Matlab? Used in MW_Controls.py implicitly stated checkboxes.
+		#TODO: Check for new signals? If so, under what conditions and from where?
+		plotSignals = [
+			"s_ecg",
+			"s_CO2",
+			"s_ppg",
+			"s_imp",
+			"s_vent",
+			"s_bcg1",
+			"s_bcg2"
+		]
+		self.saveCheckboxStates(plotSignals)
 
 		#Pass along the settings received from 
-		case["settings"] = self.settings
+		dataset["settings"] = self.settings
 		
 		#Submit the case to the mainwindow for the GUI to be created using the data provided
-		self.case_submitted.emit(case)
+		self.case_submitted.emit(dataset)
 
 	def saveCheckboxStates(self, checkboxes):
 		with open("settings.txt", "w") as f:
@@ -78,7 +109,10 @@ class DataController(qtw.QWidget):
 					self.settings["checkboxes"][element] = False
 			#Save the settings to a txt.file in JSON format located in the same directory as the .exe file
 			json.dump(self.settings, f)
-
+"""
+##	### ###	 ##
+#For deletion.# -Sebastian
+##	#######  ##
 	def getMatData(self, new_case_index=False):
 		path_LP = f"{self.DATASET_FILEPATH}/{self.SUBSET1}"
 		path_BCP = f"{self.DATASET_FILEPATH}/{self.SUBSET2}"
@@ -151,3 +185,4 @@ class DataController(qtw.QWidget):
 			value = line.split(": ", 1)[1].replace("\n","")
 			info[key] = value
 		return info #dict
+"""

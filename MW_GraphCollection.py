@@ -153,31 +153,36 @@ class MW_GraphCollection(qtw.QWidget):
 		
 
 	def plotGraphs(self, case):
-		date_time = case["info"]["date_time"]
-		sample_rate = case["info"]["sample_rate"]
+		date = case["rec_date"]
+		time = case["rec_time"]
+		sample_rate = case["fs"]
 
 		if not case["new_index"]:
-			for key in case["data"].keys():
+			#TODO: Sjekken under blir litt knotete. Her må vi bestemme oss for
+			#dynamiske variabler eller fastsatte. Grafene under forutsetter at
+			#vi bare mater inn rådata. Dette stemmer ikke.
+			for key in case["settings"]["checkboxes"].keys():
+				print(key)
 				self.graphs[key] = GraphWidget()
-				self.graphs[key].setStartTime(date_time)
+				self.graphs[key].setStartTime(date, time)
 				self.graphs[key].setFrequency(sample_rate)
-				self.graphs[key].storeData(case["data"][key])
+				self.graphs[key].storeData(case[key])
 				self.body_layout.addWidget(self.graphs[key])
 		else:
 			#Loop through existing graphwidgets and pass in new data
 			for signal, graphObj in self.graphs.items():
 				# graphObj.clear()
-				graphObj.setStartTime(date_time)
+				graphObj.setStartTime(date, time)
 				graphObj.setFrequency(sample_rate)
-				graphObj.storeData(case["data"][signal])
+				graphObj.storeData(case[signal])
 
 			#If new case contains a signal not previously used, create a new graphwidget for it
-			for key in case["data"].keys():
+			for key in case["settings"]["checkboxes"].keys():
 				if key not in self.graphs.keys():
 					self.graphs[key] = GraphWidget()
-					self.graphs[key].setStartTime(date_time)
+					self.graphs[key].setStartTime(date, time)
 					self.graphs[key].setFrequency(sample_rate)
-					self.graphs[key].storeData(case["data"][key])
+					self.graphs[key].storeData(case[key])
 					self.body_layout.addWidget(self.graphs[key])
 
 		#Hide or show the cases based on saved settings

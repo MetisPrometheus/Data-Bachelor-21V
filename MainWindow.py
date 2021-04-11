@@ -46,11 +46,11 @@ class MainWindow(qtw.QWidget):
 	def receiveNewCase(self, case):
 
 
-		for key, value in case["info"].items():
-			print(f"infokey: {key} --- infovalue: {value}")
+		#for key, value in case["info"].items():
+		#	print(f"infokey: {key} --- infovalue: {value}")
 
 		self.MW_Controls.createCheckboxes(case["settings"])
-		self.MW_GraphCollection.setDataLength(len(case["data"]["s_ecg"])) #Can use any signal (same length)
+		self.MW_GraphCollection.setDataLength(len(case["s_ecg"])) #Can use any signal (same length)
 		self.MW_GraphCollection.plotGraphs(case)
 		# self.MW_GraphCollection.testWidget()
 
