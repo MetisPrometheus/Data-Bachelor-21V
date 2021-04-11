@@ -1,1 +1,1 @@
-{"dataset": "Z:/data/bcg/2 DATASET", "annotations": "Z:/users/ssakov/bcgprog/5 ANNOTATIONS", "checkboxes": {"s_ecg": true, "s_CO2": true, "s_ppg": true, "s_imp": true, "s_vent": true, "s_bcg1": true, "s_bcg2": true}}
+{"dataset": "D:/Bakkel\u00e5r/2 DATASET", "annotations": "D:/Bakkel\u00e5r/5 ANNOTATIONS", "checkboxes": {"s_ecg": true, "s_CO2": true, "s_ppg": true, "s_imp": true, "s_vent": true, "s_bcg1": true, "s_bcg2": true}}

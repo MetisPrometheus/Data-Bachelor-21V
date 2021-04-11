@@ -1,5 +1,6 @@
 #Standard Libraries
 import math
+import datetime as dt
 
 #3rd Party Libraries
 from PyQt5 import QtWidgets as qtw
@@ -156,17 +157,22 @@ class MW_GraphCollection(qtw.QWidget):
 		date = case["rec_date"]
 		time = case["rec_time"]
 		sample_rate = case["fs"]
+		## V1.02 - Seb
+		#Normaliser signaler som i Matlab fra linjer 218ish til 239.
+		self._normalizeSignals(case)
 
 		if not case["new_index"]:
 			#TODO: Sjekken under blir litt knotete. Her må vi bestemme oss for
 			#dynamiske variabler eller fastsatte. Grafene under forutsetter at
-			#vi bare mater inn rådata. Dette stemmer ikke.
+			#vi bare mater inn rådata. Dette stemmer ikke og må bli rettet på i V1.02.
 			for key in case["settings"]["checkboxes"].keys():
-				print(key)
-				self.graphs[key] = GraphWidget()
+				self.graphs[key] = GraphWidget(key)
 				self.graphs[key].setStartTime(date, time)
 				self.graphs[key].setFrequency(sample_rate)
-				self.graphs[key].storeData(case[key])
+				##V1.02 - Seb
+				#Sender nå heller inn referanse til hele case som grafens verdier. Dette for å forenkle henting av riktige vektorer for de forskjellige signalene.
+				##
+				self.graphs[key].storeData(case)
 				self.body_layout.addWidget(self.graphs[key])
 		else:
 			#Loop through existing graphwidgets and pass in new data
@@ -195,6 +201,30 @@ class MW_GraphCollection(qtw.QWidget):
 		#After plotting new cases set the slider value back to 0
 		self.slider.setValue(0)
 		
+	def _normalizeSignals(self, case):
+		#Denne krever at tiden fortsatt blir oppgitt H:M:S i starten og konverterer til sekunder.
+		case["t_ini"] = self._getSeconds(case["rec_time"][0:8])
+		#EKG
+		#TODO: Ekstra verdier legges inn i dict for TTI og PPG, men dette kan unngås, ved å heller endre opprinnelige signaler.
+		s_ecg = case["s_ecg"]
+		case["s_ecg"] = np.where((s_ecg > 5) | (s_ecg < -5), 0, s_ecg)
+		#TTI: normal and vent
+		s_tti = case["s_imp"]
+		case["s_tti"] = np.where((np.isnan(s_tti)), 0, s_tti)
+		#PPG
+		s_ibp = case["s_ppg"]
+		case["s_ibp"] = np.where((np.isnan(s_ibp)) | (s_ibp < -10) | (s_ibp > 300), 0, s_ibp)
+		#CO2
+		s_CO2 = case["s_CO2"]
+		case["s_CO2"] = np.where((np.isnan(s_CO2)) | (s_CO2 < -5) | (s_CO2 > 150), 0, s_CO2)
+		#T
+		case["t"] = np.arange(start=0, stop=len(case["s_ecg"] - 1), step=1)/case["fs"]
+		
+	#TODO: Move to a utility ->static<- class. Husk å endre denne i self._normalizeSignals()
+	def _getSeconds(self, aString):
+		aString = aString.split(":")
+		seconds = int(aString[0])*3600 + int(aString[1])*60 + int(aString[2])
+		return seconds
 
 
 	def toggleGraph(self, checkvalue, state):

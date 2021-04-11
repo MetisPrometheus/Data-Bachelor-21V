@@ -34,7 +34,7 @@ class DataController(qtw.QWidget):
 	def __init__(self):
 		super().__init__()
 		print("--- DataController Initialized ---")
-
+	#TODO: Legg til egen metode som automatisk finner frem til f.eks. "metadata.mat" eller sti til Case filer i LP15/MAT/ og /2BCG/MAT/ i tilfelle man endrer navn på foldere.
 	def receiveSettings(self, saved_settings):
 		self.settings = saved_settings
 		self.DATASET_FILEPATH = self.settings["dataset"]
