@@ -35,7 +35,6 @@ class MW_Controls(qtw.QWidget):
 		self.checkboxes["s_bcg1"] = qtw.QCheckBox("bcg1", clicked=lambda:self.emitCheckboxState("s_bcg1"))
 		self.checkboxes["s_bcg2"] = qtw.QCheckBox("bcg2", clicked=lambda:self.emitCheckboxState("s_bcg2"))
 
-
 		self.check_layout = qtw.QHBoxLayout()
 		self.check_layout.addWidget(self.checkboxes["s_ecg"])
 		self.check_layout.addWidget(self.checkboxes["s_CO2"])
@@ -73,12 +72,12 @@ class MW_Controls(qtw.QWidget):
 		self.new_span.emit(span)
 
 	def emitCheckboxState(self, signal):
-		#Emit the state of the checkbox to determine if graph should be shown or hidden
 		state = self.checkboxes[signal].isChecked()
-		self.checkbox_signal.emit(signal, state)
-		#Save the condition of the checkbox
+		#Save the state of the checkbox
 		self.settings["checkboxes"][signal] = state
-
+		#Send the state of the checkbox to the graph wrapper for it to show or hide the selected graph
+		self.checkbox_signal.emit(signal, state)
+		
 	def createCheckboxes(self, saved_settings):
 		# for key in data.keys():ar
 		# 	ph = key.split("_")[-1]

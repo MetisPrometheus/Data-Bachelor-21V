@@ -42,10 +42,6 @@ class MainApp(qtw.QApplication):
 		self.data_controller.case_submitted.connect(self.main_window.receiveNewCase)
 		self.data_controller.case_submitted.connect(self.main_window.show)
 
-
-
-
-
 		#Receives the index for the new patient file chosen and sends it to the datacontroller
 		self.main_window.MW_Controls.new_case_index[int].connect(self.data_controller.getCase)
 
