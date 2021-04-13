@@ -110,12 +110,15 @@ class MW_GraphCollection(qtw.QWidget):
 		
 	def plotGraphs(self, case):
 		self.settings = case["settings"]
-		date_time = case["info"]["date_time"]
-		sample_rate = case["info"]["sample_rate"]
+		date = case["metadata"]["rec_date"]
+		time = case["metadata"]["rec_time"]
+		sample_rate = case["data"]["fs"]
+
+		self._normalizeSignals(case)
 
 		# Make a new plotwidget for new signals
 		for signal in case["data"].keys():
-			if signal not in self.graphs.keys():
+			if signal not in self.graphs.keys() and signal != "fs":
 				#Prepare a dock for the graphs and add it to the dock wrapper
 				dock_name = signal.split("_")[-1].upper()
 				self.docks[signal] = Dock(f"{dock_name}")
@@ -128,7 +131,7 @@ class MW_GraphCollection(qtw.QWidget):
 
 		#Loop through plotwidgets and fill with new case data
 		for signal, graphObj in self.graphs.items():
-			graphObj.setStartTime(date_time)
+			graphObj.setStartTime(date, time)
 			graphObj.setFrequency(sample_rate)
 			graphObj.storeData(case["data"][signal])
 
@@ -156,3 +159,24 @@ class MW_GraphCollection(qtw.QWidget):
 		self.settings["dockstate"] = state
 		with open("settings.txt", "w") as f:
 			json.dump(self.settings, f)
+
+	def _normalizeSignals(self, case):
+		#EKG
+		#TODO: Skal vi bruke handles case["handles"] her?
+		s_ecg = case["data"]["s_ecg"]
+		#case["data"]["s_ecg"] = np.where(s_ecg == np.inf, np.nan, s_ecg)
+		case["data"]["s_ecg"] = np.where(((s_ecg > 5) & (s_ecg < np.inf)) | (s_ecg < -5), 0, s_ecg)
+		#TTI: normal and vent
+		s_tti = case["data"]["s_imp"]
+		#case["s_tti"] = np.where((np.isnan(s_tti)), 0, s_tti)
+		case["data"]["s_imp"] = np.where((np.isnan(s_tti)), 0, s_tti)
+		#PPG
+		s_ibp = case["data"]["s_ppg"]
+		#case["s_ibp"] = np.where((np.isnan(s_ibp)) | (s_ibp < -10) | ((s_ibp > 300) & (s_ibp < np.inf)), 0, s_ibp)
+		case["data"]["s_ppg"] = np.where((np.isnan(s_ibp)) | (s_ibp < -10) | ((s_ibp > 300) & (s_ibp < np.inf)), 0, s_ibp)
+		#CO2
+		s_CO2 = case["data"]["s_CO2"]
+		case["s_CO2"] = np.where((np.isnan(s_CO2)) | (s_CO2 < -5) | ((s_CO2 > 150) & (s_CO2 < np.inf)), 0, s_CO2)
+		#Set padding to NaN.
+		for key, value in case["data"].items():
+			case["data"][key] = np.where(value == np.inf, np.nan, value)

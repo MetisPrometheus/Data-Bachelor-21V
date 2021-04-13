@@ -44,8 +44,9 @@ class MainWindow(qtw.QWidget):
 		self.MW_Controls.showCases(filenames)
 
 	def receiveNewCase(self, case):
-		for key, value in case["info"].items():
-			print(f"infokey: {key} --- infovalue: {value}")
+		#TODO: Fjern eller så må vi hente ut info i DataController.
+		#for key, value in case["info"].items():
+		#	print(f"infokey: {key} --- infovalue: {value}")
 
 		self.MW_Controls.createCheckboxes(case["settings"])
 		self.MW_GraphCollection.setDataLength(len(case["data"]["s_ecg"])) #Can use any signal (same length)

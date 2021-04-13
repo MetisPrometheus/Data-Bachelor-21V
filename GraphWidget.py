@@ -41,6 +41,8 @@ class GraphWidget(pg.PlotWidget):
 
 	def storeData(self, values):
 		self.values = np.array(values)
+		
+		#TODO:YLim må settes for hvert plott.
 		self.setYRange(np.nanmax(values), np.nanmin(values), padding=0.05)
 		self.plotSection()
 
@@ -48,11 +50,9 @@ class GraphWidget(pg.PlotWidget):
 		self.span = new_span
 
 	def setFrequency(self, sample_rate):
-		frequency = int(sample_rate.replace("Hz",""))
-		self.frequency = frequency
+		self.frequency = sample_rate
 
-	def setStartTime(self, date_time):
-		date, time = date_time.split(" ", 1)
+	def setStartTime(self, date, time):
 		print(f"date: {date}, time: {time}")
 		self.start_time = time
 
@@ -81,7 +81,8 @@ class GraphWidget(pg.PlotWidget):
 
 		time = list(range(y_start, y_end))
 
-		hms, ms = self.start_time.split(".")
+		hms = self.start_time[1:8]
+		miliseconds = self.start_time[9:11]
 		h, m, s = hms.split(":")
 
 			#TODO USE DATETIME AS X AXIS ISNTEAD OF PLAIN NUMBERS
