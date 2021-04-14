@@ -9,8 +9,6 @@ from pyqtgraph.dockarea import *
 
 #Local Classes
 from GraphWidget import GraphWidget
-from OpenGLWidget import OpenGLWidget
-from MainGLWidget import MainGLWidget
 # from CustomPlot import CustomPlot
 
 import sys
@@ -59,6 +57,7 @@ class MW_GraphCollection(qtw.QWidget):
 		for key, graphObj in self.graphs.items():
 			graphObj.clear()
 			graphObj.plotSection(slider_value)
+			#TODO: The dock area should be moved once the slider value is changed.
 
 
 	def receiveCheckboxSignal(self, signal, state):
@@ -115,7 +114,6 @@ class MW_GraphCollection(qtw.QWidget):
 		sample_rate = case["data"]["fs"]
 
 		self._normalizeSignals(case)
-
 		# Make a new plotwidget for new signals
 		for signal in case["data"].keys():
 			if signal not in self.graphs.keys() and signal != "fs":

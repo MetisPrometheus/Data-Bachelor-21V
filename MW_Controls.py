@@ -27,13 +27,13 @@ class MW_Controls(qtw.QWidget):
 		self.dropdown_cases.blockSignals(False)
 
 		self.checkboxes = {}
-		self.checkboxes["s_ecg"] = qtw.QCheckBox("ecg", clicked=lambda:self.emitCheckboxState("s_ecg"))
-		self.checkboxes["s_CO2"] = qtw.QCheckBox("CO2", clicked=lambda:self.emitCheckboxState("s_CO2"))
-		self.checkboxes["s_ppg"] = qtw.QCheckBox("ppg", clicked=lambda:self.emitCheckboxState("s_ppg"))
+		self.checkboxes["s_ecg"] = qtw.QCheckBox("ECG (mV)", clicked=lambda:self.emitCheckboxState("s_ecg"))
+		self.checkboxes["s_CO2"] = qtw.QCheckBox("CO2 (mmHg)", clicked=lambda:self.emitCheckboxState("s_CO2"))
+		self.checkboxes["s_ppg"] = qtw.QCheckBox("PPG (SpO2)", clicked=lambda:self.emitCheckboxState("s_ppg"))
 		self.checkboxes["s_imp"] = qtw.QCheckBox("imp", clicked=lambda:self.emitCheckboxState("s_imp"))
-		self.checkboxes["s_vent"] = qtw.QCheckBox("vent", clicked=lambda:self.emitCheckboxState("s_vent"))
-		self.checkboxes["s_bcg1"] = qtw.QCheckBox("bcg1", clicked=lambda:self.emitCheckboxState("s_bcg1"))
-		self.checkboxes["s_bcg2"] = qtw.QCheckBox("bcg2", clicked=lambda:self.emitCheckboxState("s_bcg2"))
+		self.checkboxes["s_vent"] = qtw.QCheckBox("TTI (\u03A9)", clicked=lambda:self.emitCheckboxState("s_vent"))
+		self.checkboxes["s_bcg1"] = qtw.QCheckBox("BCG1 (V)", clicked=lambda:self.emitCheckboxState("s_bcg1"))
+		self.checkboxes["s_bcg2"] = qtw.QCheckBox("BCG1 (V)", clicked=lambda:self.emitCheckboxState("s_bcg2"))
 
 		self.check_layout = qtw.QHBoxLayout()
 		self.check_layout.addWidget(self.checkboxes["s_ecg"])
