@@ -10,7 +10,7 @@ from vispy import scene
 
 
 class GraphWidget(pg.PlotWidget):
-
+	name = None
 	values = None
 	frequency = 250
 	start_time = None
@@ -20,8 +20,9 @@ class GraphWidget(pg.PlotWidget):
 	window_length = None
 	total_increments = None
 
-	def __init__(self, useOpenGL=True):
+	def __init__(self, name, useOpenGL=True):
 		super().__init__()
+		self.name = name
 
 		# self.setXRange(10000, 30000, 0.05)
 		self.setLimits(xMin=-500)
@@ -39,11 +40,9 @@ class GraphWidget(pg.PlotWidget):
 		#Implement keyboard commands?
 		print(ev.key())
 
-	def storeData(self, values):
-		self.values = np.array(values)
+	def storeData(self, case):
+		self.case = case
 		
-		#TODO:YLim må settes for hvert plott.
-		self.setYRange(np.nanmax(values), np.nanmin(values), padding=0.05)
 		self.plotSection()
 
 	def setSpan(self, new_span):
@@ -57,7 +56,7 @@ class GraphWidget(pg.PlotWidget):
 		self.start_time = time
 
 	def computeIncrements(self):
-		data_length = len(self.values) #(~550_000)
+		data_length = len(self.case["data"][self.name]) #(~550_000)
 		#Calculate window_length based on frequency (250) and timeframe (60)
 		self.window_length = self.frequency*self.span
 		complete_sections = math.floor(data_length/self.window_length) - 1
@@ -67,6 +66,22 @@ class GraphWidget(pg.PlotWidget):
 		self.total_increments += math.ceil(incomplete_section/2)
 
 	def plotSection(self, slider_value=0):
+		plotName = self.name
+		if plotName == "s_ecg":
+			self._plotECG(slider_value)
+		elif plotName == "s_CO2":
+			self._plotCO2(slider_value)
+		elif plotName == "s_ppg":
+			 self._plotPPG_SPO2(slider_value)
+		elif plotName == "s_imp":
+			self._plotTTI(slider_value)
+		elif plotName == "s_vent":
+			self._plotVent(slider_value)
+		elif plotName == "s_bcg1":
+			self._plotBCG1(slider_value)
+		elif plotName == "s_bcg2":
+			self._plotBCG2(slider_value)
+		"""
 		self.computeIncrements()
 		self.clear()
 		low = math.floor(slider_value/5)
@@ -76,7 +91,7 @@ class GraphWidget(pg.PlotWidget):
 		y_end = y_start + self.window_length
 
 		if slider_value == self.total_increments:
-			y_end = len(self.values)
+			y_end = len(self.case["data"][self.name])
 			y_start = y_end - self.window_length
 
 		time = list(range(y_start, y_end))
@@ -114,4 +129,216 @@ class GraphWidget(pg.PlotWidget):
 		# xax = self.getAxis("bottom")
 		# xax.setTicks(ticks)
 
-		self.plot(time, self.values[y_start:y_end])
+		self.plot(time, self.case["data"][self.name][y_start:y_end])
+		"""
+	#TODO: Sett opp standard grafer slik de er i MatLab og legg felles funksjonalitet i plotSection() eller liknende. Emil.
+	#Om det er en graf her som ikke skal være her, så kommenter den ut herfra og resten av koden.
+	def _plotECG(self, slider_value):
+		#TODO:YLim må settes for hvert plott.
+		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
+		self.computeIncrements()
+		self.clear()
+		low = math.floor(slider_value/5)
+		remainder = slider_value%5
+
+		y_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
+		y_end = y_start + self.window_length
+
+		if slider_value == self.total_increments:
+			y_end = len(self.case["data"][self.name])
+			y_start = y_end - self.window_length
+
+		time = list(range(y_start, y_end))
+
+		hms = self.start_time[1:8]
+		miliseconds = self.start_time[9:11]
+		h, m, s = hms.split(":")
+		self.plot(time, self.case["data"][self.name][y_start:y_end])
+
+		#TODO: Seb
+		#self._plotQRS(slider_value)
+
+	def _plotQRS(self, slider_value):
+		#print("Plotting QRS")
+		t_qrs = self.case["metadata"]["t_qrs"]
+		i_qrs = list()
+		for i in range(len(t_qrs)):
+			i_qrs.append(list(t_qrs[i][j] for j in [0, 2]))
+			t_qrs[i] = t_qrs[i][1]
+		#Sjekk om lista er tom. Spør hva dette er til.
+		if not i_qrs:
+			pass
+			#TODO legg til NaN eller ignorer.
+		else:
+			pass
+			#Verdt å merke seg at vi her også må bruke handles.s_ecg for signal for y-akse.
+			#graphDot(x=t_qrs, y=s_ecg[int(round(t_qrs*handles.fs)+1)])
+			#TODO plott inn rektangler ved bruk av i_qrs og sirkler ved bruk av t_qrs
+
+	def _plotCO2(self, slider_value):
+		#TODO:YLim må settes for hvert plott.
+		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
+		self.computeIncrements()
+		self.clear()
+		low = math.floor(slider_value/5)
+		remainder = slider_value%5
+
+		y_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
+		y_end = y_start + self.window_length
+
+		if slider_value == self.total_increments:
+			y_end = len(self.case["data"][self.name])
+			y_start = y_end - self.window_length
+
+		time = list(range(y_start, y_end))
+
+		hms = self.start_time[1:8]
+		miliseconds = self.start_time[9:11]
+		h, m, s = hms.split(":")
+		self.plot(time, self.case["data"][self.name][y_start:y_end])
+	#TODO: Seb
+	def _plotCOPoints(self, slider_value):
+		#print("Plotting COPoints")
+		t_cap = self.case["metadata"]["t_cap"]
+		t_CO2 = self.case["metadata"]["t_CO2"]
+		n_min = []
+		n_max = []
+		t_min = []
+		t_max = []
+		for item in t_cap:
+			n_min.append(int(round(item[0]*self.frequency)) + 1)
+			t_min.append(item[0] + t_CO2)
+			n_max.append(int(round(item[1]*self.frequency)) + 1)
+			t_max.append(item[1] + t_CO2)
+
+		#TODO plott inn min og maks punkter på graf.
+		#graphDot(x=t_min, y=s_CO2(n_min))
+		#graphDot(x=t_max, y=s_CO2(n_max))
+
+	def _plotPPG_SPO2(self, slider_value):
+		#TODO:YLim må settes for hvert plott.
+		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
+		self.computeIncrements()
+		self.clear()
+		low = math.floor(slider_value/5)
+		remainder = slider_value%5
+
+		y_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
+		y_end = y_start + self.window_length
+
+		if slider_value == self.total_increments:
+			y_end = len(self.case["data"][self.name])
+			y_start = y_end - self.window_length
+
+		time = list(range(y_start, y_end))
+
+		hms = self.start_time[1:8]
+		miliseconds = self.start_time[9:11]
+		h, m, s = hms.split(":")
+		self.plot(time, self.case["data"][self.name][y_start:y_end])
+
+	def _plotTTI(self, slider_value):
+		#TODO:YLim må settes for hvert plott.
+		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
+		self.computeIncrements()
+		self.clear()
+		low = math.floor(slider_value/5)
+		remainder = slider_value%5
+
+		y_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
+		y_end = y_start + self.window_length
+
+		if slider_value == self.total_increments:
+			y_end = len(self.case["data"][self.name])
+			y_start = y_end - self.window_length
+
+		time = list(range(y_start, y_end))
+
+		hms = self.start_time[1:8]
+		miliseconds = self.start_time[9:11]
+		h, m, s = hms.split(":")
+		self.plot(time, self.case["data"][self.name][y_start:y_end])
+
+	def _plotVent(self, slider_value):
+		#TODO:YLim må settes for hvert plott.
+		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
+		self.computeIncrements()
+		self.clear()
+		low = math.floor(slider_value/5)
+		remainder = slider_value%5
+
+		y_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
+		y_end = y_start + self.window_length
+
+		if slider_value == self.total_increments:
+			y_end = len(self.case["data"][self.name])
+			y_start = y_end - self.window_length
+
+		time = list(range(y_start, y_end))
+
+		hms = self.start_time[1:8]
+		miliseconds = self.start_time[9:11]
+		h, m, s = hms.split(":")
+		self.plot(time, self.case["data"][self.name][y_start:y_end])
+		
+		#TODO: Seb
+		"""
+		#print("Plotting Vent")
+		t_vent = self.values["t_vent"]
+		i_vent = list()
+		for i in range(len(t_vent)):
+			i_vent.append(list(t_vent[i][j] for j in [0, 2]))
+			i_vent[i] = t_vent[i][1]
+		#Sjekk om lista er tom. Spør hva dette er til.
+		if not i_vent:
+			pass
+			#TODO legg til NaN eller ignorer.
+		else:
+			pass
+			#Verdt å merke seg at vi her også må bruke handles.s_vent for signal for y-akse.
+			#graphDot(x=t_vent, y=s_vent[int(round(t_vent*handles.fs)+1)])
+			#TODO plott inn rektangler ved bruk av i_qrs og sirkler ved bruk av t_qrs
+		"""
+	def _plotBCG1(self, slider_value):
+		#TODO:YLim må settes for hvert plott.
+		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
+		self.computeIncrements()
+		self.clear()
+		low = math.floor(slider_value/5)
+		remainder = slider_value%5
+
+		y_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
+		y_end = y_start + self.window_length
+
+		if slider_value == self.total_increments:
+			y_end = len(self.case["data"][self.name])
+			y_start = y_end - self.window_length
+
+		time = list(range(y_start, y_end))
+
+		hms = self.start_time[1:8]
+		miliseconds = self.start_time[9:11]
+		h, m, s = hms.split(":")
+		self.plot(time, self.case["data"][self.name][y_start:y_end])
+
+	def _plotBCG2(self, slider_value):
+		#TODO:YLim må settes for hvert plott.
+		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
+		self.computeIncrements()
+		self.clear()
+		low = math.floor(slider_value/5)
+		remainder = slider_value%5
+
+		y_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
+		y_end = y_start + self.window_length
+
+		if slider_value == self.total_increments:
+			y_end = len(self.case["data"][self.name])
+			y_start = y_end - self.window_length
+
+		time = list(range(y_start, y_end))
+
+		hms = self.start_time[1:8]
+		miliseconds = self.start_time[9:11]
+		h, m, s = hms.split(":")
+		self.plot(time, self.case["data"][self.name][y_start:y_end])

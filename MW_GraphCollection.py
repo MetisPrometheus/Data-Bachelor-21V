@@ -124,7 +124,7 @@ class MW_GraphCollection(qtw.QWidget):
 				self.docks[signal] = Dock(f"{dock_name}")
 				self.dock_area.addDock(self.docks[signal], "bottom")
 				#Make a graph for every signal and assign them to their own docks
-				self.graphs[signal] = GraphWidget()
+				self.graphs[signal] = GraphWidget(signal)
 				self.graphs[signal].getAxis("left").setWidth(w=25)
 				self.graphs[signal].setMouseEnabled(x=True, y=False)
 				self.docks[signal].addWidget(self.graphs[signal])
@@ -133,7 +133,7 @@ class MW_GraphCollection(qtw.QWidget):
 		for signal, graphObj in self.graphs.items():
 			graphObj.setStartTime(date, time)
 			graphObj.setFrequency(sample_rate)
-			graphObj.storeData(case["data"][signal])
+			graphObj.storeData(case)
 
 		#Hide or show the cases based on saved settings
 		for signal in case["settings"]["checkboxes"].keys():
