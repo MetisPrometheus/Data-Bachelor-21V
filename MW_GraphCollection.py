@@ -9,6 +9,7 @@ from pyqtgraph.dockarea import *
 
 #Local Classes
 from GraphWidget import GraphWidget
+from GraphWidget import TagsWidget
 # from CustomPlot import CustomPlot
 
 import sys
@@ -42,7 +43,11 @@ class MW_GraphCollection(qtw.QWidget):
 		self.slider = qtw.QSlider(qtc.Qt.Horizontal, valueChanged=self.sliderMoved)
 		# self.slider.setFocusPolicy(qtc.Qt.NoFocus)
 
-		self.bot_layout = qtw.QHBoxLayout()
+		self.bot_layout = qtw.QVBoxLayout()
+		self.tags = TagsWidget()
+
+		self.tags.setMaximumHeight(30)
+		self.bot_layout.addWidget(self.tags)
 		self.bot_layout.addWidget(self.slider)
 
 		#Wrap a main_layout around the top-, body- and bottom part of the GUI
@@ -114,6 +119,7 @@ class MW_GraphCollection(qtw.QWidget):
 		sample_rate = case["data"]["fs"]
 
 		self._normalizeSignals(case)
+		print("case[data]: ", case["data"])
 		# Make a new plotwidget for new signals
 		for signal in case["data"].keys():
 			if signal not in self.graphs.keys() and signal != "fs":
@@ -126,7 +132,7 @@ class MW_GraphCollection(qtw.QWidget):
 				self.graphs[signal].getAxis("left").setWidth(w=25)
 				self.graphs[signal].setMouseEnabled(x=True, y=False)
 				self.docks[signal].addWidget(self.graphs[signal])
-
+				#self.tags._setTags(signal)
 		#Loop through plotwidgets and fill with new case data
 		for signal, graphObj in self.graphs.items():
 			graphObj.setStartTime(date, time)

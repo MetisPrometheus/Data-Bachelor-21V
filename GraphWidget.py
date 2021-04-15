@@ -5,9 +5,6 @@ import numpy as np
 #3rd Party Libraries
 import pyqtgraph as pg
 
-# import vispy.mpl_plot as plt
-from vispy import scene
-
 
 class GraphWidget(pg.PlotWidget):
 	name = None
@@ -30,10 +27,9 @@ class GraphWidget(pg.PlotWidget):
 		# axis = pg.DateAxisItem()
 		# self.setAxisItems({"bottom": axis})
 		#Fix graphwidget settings
-
-		# pg.setConfigOption("background", "w")
-		# pg.setConfigOption("foreground", "k")
-		pass
+		self.pen = pg.mkPen('b')
+		pg.setConfigOption("background", "w")
+		pg.setConfigOption("foreground", "k")
 
 	#Event triggered when a plotwidget is focused and a key is pressed
 	def keyPressEvent(self, ev):
@@ -153,10 +149,10 @@ class GraphWidget(pg.PlotWidget):
 		miliseconds = self.start_time[9:11]
 		h, m, s = hms.split(":")
 		print(f"x_start: {x_start}, x_end: {x_end}")
-		self.plot(time, self.case["data"][self.name][x_start:x_end])
+		self.plot(time, self.case["data"][self.name][x_start:x_end], pen=self.pen)
 		self._setAnnotations(x_start=x_start, x_end=x_end)
 		#TODO: Seb
-		#self._plotQRS(slider_value)
+		self._plotQRS()
 
 	def _plotQRS(self):
 		#print("Plotting QRS")
@@ -164,10 +160,13 @@ class GraphWidget(pg.PlotWidget):
 		only_qrs_points = list()
 		i_qrs = list()
 
-		print("len(t_qrs):",len(t_qrs))
 		for i in range(len(t_qrs)):
 			i_qrs.append(list(t_qrs[i][j] for j in [0, 2]))
 			only_qrs_points.append(t_qrs[i][1])
+
+		self.roi = pg.ROI([10, 100], size=50)
+
+		self.addItem(self.roi)
 		#Sjekk om lista er tom. Spør hva dette er til.
 		if not i_qrs:
 			pass
@@ -198,7 +197,7 @@ class GraphWidget(pg.PlotWidget):
 		hms = self.start_time[1:8]
 		miliseconds = self.start_time[9:11]
 		h, m, s = hms.split(":")
-		self.plot(time, self.case["data"][self.name][x_start:x_end])
+		self.plot(time, self.case["data"][self.name][x_start:x_end], pen=self.pen)
 	#TODO: Seb
 	def _plotCOPoints(self, slider_value):
 		#print("Plotting COPoints")
@@ -237,7 +236,7 @@ class GraphWidget(pg.PlotWidget):
 		hms = self.start_time[1:8]
 		miliseconds = self.start_time[9:11]
 		h, m, s = hms.split(":")
-		self.plot(time, self.case["data"][self.name][x_start:x_end])
+		self.plot(time, self.case["data"][self.name][x_start:x_end], pen=self.pen)
 
 	def _plotTTI(self, slider_value):
 		#TODO:YLim må settes for hvert plott.
@@ -258,7 +257,7 @@ class GraphWidget(pg.PlotWidget):
 		hms = self.start_time[1:8]
 		miliseconds = self.start_time[9:11]
 		h, m, s = hms.split(":")
-		self.plot(time, self.case["data"][self.name][x_start:x_end])
+		self.plot(time, self.case["data"][self.name][x_start:x_end], pen=self.pen)
 
 	def _plotVent(self, slider_value):
 		#TODO:YLim må settes for hvert plott.
@@ -279,7 +278,7 @@ class GraphWidget(pg.PlotWidget):
 		hms = self.start_time[1:8]
 		miliseconds = self.start_time[9:11]
 		h, m, s = hms.split(":")
-		self.plot(time, self.case["data"][self.name][x_start:x_end])
+		self.plot(time, self.case["data"][self.name][x_start:x_end], pen=self.pen)
 		
 		#TODO: Seb
 		"""
@@ -313,14 +312,13 @@ class GraphWidget(pg.PlotWidget):
 			x_end = len(self.case["data"][self.name])
 			x_start = x_end - self.window_length
 
-		x_start = round(x_start/250)
-		x_end = round(x_end/250)
+
 		time = list(range(x_start, x_end))
 
 		hms = self.start_time[1:8]
 		miliseconds = self.start_time[9:11]
 		h, m, s = hms.split(":")
-		self.plot(time, self.case["data"][self.name][x_start:x_end])
+		self.plot(time, self.case["data"][self.name][x_start:x_end], pen=self.pen)
 
 	def _plotBCG2(self, slider_value):
 		#TODO:YLim må settes for hvert plott.
@@ -341,7 +339,7 @@ class GraphWidget(pg.PlotWidget):
 		hms = self.start_time[1:8]
 		miliseconds = self.start_time[9:11]
 		h, m, s = hms.split(":")
-		self.plot(time, self.case["data"][self.name][x_start:x_end])
+		self.plot(time, self.case["data"][self.name][x_start:x_end], pen=self.pen)
 
 	def _setAnnotations(self, x_start, x_end):
 		anns = self.case["metadata"]["ann"]
@@ -350,8 +348,23 @@ class GraphWidget(pg.PlotWidget):
 			for i in range(len(t_anns)):
 				if t_anns[i]*self.frequency >= x_start and t_anns[i]*self.frequency <= x_end:
 					if i == 0 or i == (len(t_anns)-1): # Make a different marking for the first and last item.
-						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=anns[i], pen=pg.mkPen('g', width=2)))
+						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=anns[i], pen=pg.mkPen('g', width=2), labelOpts={'color': 'w', 'position': 0.7, 'fill': 'g'}))
 					else:
-						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=anns[i], pen=pg.mkPen('b', width=2))) # Muliplying time by frequency just so it matches our time vector. TODO: Divide all time vectors by the frequency
+						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=anns[i], pen=pg.mkPen('b', width=2), labelOpts={'color': 'w', 'position': 0.7, 'fill': 'b'})) # Muliplying time by frequency just so it matches our time vector. TODO: Divide all time vectors by the frequency
 		else:
 			print("Something went wrong. (The vectors anns and t_anns are not the same length)")
+
+class TagsWidget(pg.PlotWidget):
+    def __init__(self, useOpenGL=True):
+        super().__init__()
+        self.hideAxis('bottom')
+        self.hideAxis('left')
+        pg.setConfigOption("background", "w")
+        self.setMouseEnabled(x=False, y=False)
+    
+    def _storeData(self, case):
+        self.case = case
+
+    # def _setTags(self, name):
+	# 	print(self.case["data"]["fs"])
+	# 	self.addItem(pg.InfiniteLine(pos=3, label="T", pen=pg.mkPen('b', width=2), labelOpts={'color': 'w', 'fill': 'b'}))
