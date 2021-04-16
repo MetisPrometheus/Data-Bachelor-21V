@@ -9,7 +9,7 @@ from pyqtgraph.dockarea import *
 
 #Local Classes
 from GraphWidget import GraphWidget
-from GraphWidget import TagsWidget
+from AnnotationsWidget import AnnotationsWidget
 # from CustomPlot import CustomPlot
 
 import sys
@@ -44,7 +44,7 @@ class MW_GraphCollection(qtw.QWidget):
 		# self.slider.setFocusPolicy(qtc.Qt.NoFocus)
 
 		self.bot_layout = qtw.QVBoxLayout()
-		self.tags = TagsWidget()
+		self.tags = AnnotationsWidget()
 
 		self.tags.setMaximumHeight(30)
 		self.bot_layout.addWidget(self.tags)
@@ -118,7 +118,9 @@ class MW_GraphCollection(qtw.QWidget):
 		time = case["metadata"]["rec_time"]
 		sample_rate = case["data"]["fs"]
 
+		self.tags._setTags(case)
 		self._normalizeSignals(case)
+
 		print("case[data]: ", case["data"])
 		# Make a new plotwidget for new signals
 		for signal in case["data"].keys():
@@ -132,12 +134,13 @@ class MW_GraphCollection(qtw.QWidget):
 				self.graphs[signal].getAxis("left").setWidth(w=25)
 				self.graphs[signal].setMouseEnabled(x=True, y=False)
 				self.docks[signal].addWidget(self.graphs[signal])
-				#self.tags._setTags(signal)
+
 		#Loop through plotwidgets and fill with new case data
 		for signal, graphObj in self.graphs.items():
 			graphObj.setStartTime(date, time)
 			graphObj.setFrequency(sample_rate)
 			graphObj.storeData(case)
+
 
 		#Hide or show the cases based on saved settings
 		for signal in case["settings"]["checkboxes"].keys():

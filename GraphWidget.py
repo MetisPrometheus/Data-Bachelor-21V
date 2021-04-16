@@ -28,7 +28,8 @@ class GraphWidget(pg.PlotWidget):
 		# self.setAxisItems({"bottom": axis})
 		#Fix graphwidget settings
 		self.pen = pg.mkPen('b')
-		pg.setConfigOption("background", "w")
+		self.setBackground('w')
+		#pg.setConfigOption("background", "w")
 		pg.setConfigOption("foreground", "k")
 
 	#Event triggered when a plotwidget is focused and a key is pressed
@@ -353,18 +354,3 @@ class GraphWidget(pg.PlotWidget):
 						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=anns[i], pen=pg.mkPen('b', width=2), labelOpts={'color': 'w', 'position': 0.7, 'fill': 'b'})) # Muliplying time by frequency just so it matches our time vector. TODO: Divide all time vectors by the frequency
 		else:
 			print("Something went wrong. (The vectors anns and t_anns are not the same length)")
-
-class TagsWidget(pg.PlotWidget):
-    def __init__(self, useOpenGL=True):
-        super().__init__()
-        self.hideAxis('bottom')
-        self.hideAxis('left')
-        pg.setConfigOption("background", "w")
-        self.setMouseEnabled(x=False, y=False)
-    
-    def _storeData(self, case):
-        self.case = case
-
-    # def _setTags(self, name):
-	# 	print(self.case["data"]["fs"])
-	# 	self.addItem(pg.InfiniteLine(pos=3, label="T", pen=pg.mkPen('b', width=2), labelOpts={'color': 'w', 'fill': 'b'}))
