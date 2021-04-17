@@ -17,6 +17,10 @@ class GraphWidget(pg.PlotWidget):
 	window_length = None
 	total_increments = None
 
+	time = None
+	x_start = None
+	x_end = None
+
 	def __init__(self, name, useOpenGL=True):
 		super().__init__()
 		self.name = name
