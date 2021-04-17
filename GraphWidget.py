@@ -33,9 +33,9 @@ class GraphWidget(pg.PlotWidget):
 		pg.setConfigOption("foreground", "k")
 
 	#Event triggered when a plotwidget is focused and a key is pressed
-	def keyPressEvent(self, ev):
+	# def keyPressEvent(self, ev):
 		#Implement keyboard commands?
-		print(ev.key())
+		# print(ev.key())
 
 	def storeData(self, case):
 		self.case = case
