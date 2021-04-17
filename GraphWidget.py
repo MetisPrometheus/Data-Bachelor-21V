@@ -52,10 +52,13 @@ class GraphWidget(pg.PlotWidget):
 		print(f"date: {date}, time: {time}")
 		self.start_time = time
 
-	def computeIncrements(self):
-		data_length = len(self.case["data"][self.name]) #(~550_000)
+	def computeIncrements(self, window_length=0):
+		data_length = len(self.case["data"][self.name])
 		#Calculate window_length based on frequency (250) and timeframe (60)
-		self.window_length = self.frequency*self.span
+		if window_length == 0:
+			self.window_length = self.frequency*self.span
+		else:
+			self.window_length = window_length
 		complete_sections = math.floor(data_length/self.window_length) - 1
 		self.total_increments = complete_sections*5 #Increments will slide graph by 20%
 
