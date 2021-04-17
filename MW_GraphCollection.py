@@ -1,6 +1,9 @@
 #Standard Libraries
+import sys
 import math
 import json
+import numpy as np
+import numpy.random as rdn
 
 #3rd Party Libraries
 from PyQt5 import QtWidgets as qtw
@@ -11,10 +14,6 @@ from pyqtgraph.dockarea import *
 from GraphWidget import GraphWidget
 from AnnotationsWidget import AnnotationsWidget
 # from CustomPlot import CustomPlot
-
-import sys
-import numpy as np
-import numpy.random as rdn
 
 # class MW_GraphCollection(qtw.QMainWindow):
 class MW_GraphCollection(qtw.QWidget):
@@ -37,7 +36,6 @@ class MW_GraphCollection(qtw.QWidget):
 
 		self.body_layout = qtw.QVBoxLayout()
 		self.body_layout.addWidget(self.dock_area)
-		
 
 		#BOTTOM PART OF GUI (Slider and Info)
 		self.slider = qtw.QSlider(qtc.Qt.Horizontal, valueChanged=self.sliderMoved)
@@ -61,16 +59,16 @@ class MW_GraphCollection(qtw.QWidget):
 		print(f"slider moved to: {slider_value}")
 		for key, graphObj in self.graphs.items():
 			graphObj.clear()
-			graphObj.plotSection(slider_value)
-			#TODO: The dock area should be moved once the slider value is changed.
-
+			graphObj.plotSlider(slider_value)
 
 	def receiveCheckboxSignal(self, signal, state):
 		# print(f"state: {state}, signal: {signal}")
 		if state:
 			self.docks[signal].show()
+			self.graphs[signal].show()
 		else:
 			self.docks[signal].hide()
+			self.graphs[signal].hide()
 
 	def setSlider(self, increments):
 		self.slider_max = increments
@@ -141,6 +139,14 @@ class MW_GraphCollection(qtw.QWidget):
 			graphObj.setFrequency(sample_rate)
 			graphObj.storeData(case)
 
+		#Synchronize all plotwidgets
+		for signal, graphObj in self.graphs.items():
+				graphObj.setXLink(self.graphs["s_vent"])
+
+		#TODO: Fix bug related to toggled-off graphs buggy behavior the next time the program is started
+		#Re-organize the docks in the order they were in when the program was closed
+		# if "dockstate" in self.settings.keys():
+			# self.dock_area.restoreState(self.settings["dockstate"])
 
 		#Hide or show the cases based on saved settings
 		for signal in case["settings"]["checkboxes"].keys():
@@ -148,14 +154,6 @@ class MW_GraphCollection(qtw.QWidget):
 				self.docks[signal].show()
 			else:
 				self.docks[signal].hide()
-
-		#Synchronize all plotwidgets
-		for signal, graphObj in self.graphs.items():
-				graphObj.setXLink(self.graphs["s_vent"])
-
-		#Re-organize the docks in the order they were in when the program was closed
-		if "dockstate" in self.settings.keys():
-			self.dock_area.restoreState(self.settings["dockstate"])
 
 		#After plotting new cases set the slider value back to 0
 		self.slider.setValue(0)
