@@ -62,6 +62,52 @@ class GraphWidget(pg.PlotWidget):
 		incomplete_section = ((data_length/self.window_length)-(complete_sections+1))*10 #[0-10]
 		self.total_increments += math.ceil(incomplete_section/2)
 
+	#Plotting graphs after panning/zooming
+	def plotPosition(self, viewbox_start):
+		self.clear()
+		data_length = len(self.case["data"][self.name])
+		self.x_start = viewbox_start - self.window_length
+		self.x_end = viewbox_start + self.window_length*2
+
+		if self.x_start < 0:
+			self.x_start = 0
+		elif self.x_end >= data_length:
+			self.x_end = data_length
+			
+		self.time = np.array(list(range(self.x_start, self.x_end)))
+		self.plotSection()
+
+	#Plotting graphs after moving the slider
+	def plotSlider(self, slider_value=0):
+		data_length = len(self.case["data"][self.name])
+		low = math.floor(slider_value/5)
+		remainder = slider_value%5	
+
+		#Set the range of the visible part of the graph
+		viewbox_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
+		viewbox_end = viewbox_start + self.window_length
+
+		if slider_value == self.total_increments:
+			viewbox_end = data_length
+			viewbox_start = viewbox_end - self.window_length
+		self.setXRange(viewbox_start, viewbox_end)
+
+		#Set the range of the plotted part of the graph
+		self.x_start = viewbox_start - self.window_length
+		self.x_end = viewbox_start + self.window_length*2
+		if viewbox_start - self.window_length < 0:
+			self.x_start = 0
+		elif viewbox_start + self.window_length*2 >= data_length:
+			self.x_end = data_length
+
+		self.time = list(range(self.x_start, self.x_end))
+
+		hms = self.start_time[1:8]
+		miliseconds = self.start_time[9:11]
+		h, m, s = hms.split(":")
+		print(f"x_start: {self.x_start}, x_end: {self.x_end}")
+		self.plotSection()
+	
 	def plotSection(self, slider_value=0):
 		plotName = self.name
 		if plotName == "s_ecg":
