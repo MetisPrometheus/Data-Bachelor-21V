@@ -22,7 +22,7 @@ class GraphWidget(pg.PlotWidget):
 		self.name = name
 
 		# self.setXRange(10000, 30000, 0.05)
-		self.setLimits(xMin=-500)
+		self.setLimits(xMin=-500, minXRange=100, maxXRange=50000)
 
 		# axis = pg.DateAxisItem()
 		# self.setAxisItems({"bottom": axis})
@@ -39,8 +39,9 @@ class GraphWidget(pg.PlotWidget):
 
 	def storeData(self, case):
 		self.case = case
-		
-		self.plotSection()
+		self.setLimits(xMax=len(self.case["data"][self.name]))
+		self.computeIncrements()
+		self.plotSlider()
 
 	def setSpan(self, new_span):
 		self.span = new_span
@@ -215,7 +216,7 @@ class GraphWidget(pg.PlotWidget):
 		#TODO:YLim må settes for hvert plott.
 		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
 		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-		
+
 	#TODO: Seb
 	def _plotCOPoints(self, slider_value):
 		#print("Plotting COPoints")
