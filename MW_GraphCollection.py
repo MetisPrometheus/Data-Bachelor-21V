@@ -87,7 +87,6 @@ class MW_GraphCollection(qtw.QWidget):
 		if new_slide > max_increment:
 			new_slide = max_increment
 
-		
 		for key, graphObj in self.graphs.items():
 			graphObj.setSpan(new_span)
 
@@ -98,10 +97,11 @@ class MW_GraphCollection(qtw.QWidget):
 		self.data_length = data_length
 		self.computeIncrements()
 
-	def computeIncrements(self):
+	def computeIncrements(self, window_length=0):
 		#Calculate window_length based on frequency (250) and timeframe (60)
 		frequency = 250
-		window_length = frequency*self.old_span
+		if window_length == 0:
+			window_length = frequency*self.old_span
 		complete_sections = math.floor(self.data_length/window_length) - 1
 		total_increments = complete_sections*5 #Increments will slide graph by 20%
 
