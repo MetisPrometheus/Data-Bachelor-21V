@@ -117,21 +117,13 @@ class GraphWidget(pg.PlotWidget):
 		self.plotSection()
 
 	def plotSection(self, slider_value=0):
-		plotName = self.name
-		if plotName == "s_ecg":
-			self._plotECG()
-		elif plotName == "s_CO2":
-			self._plotCO2()
-		elif plotName == "s_ppg":
-			 self._plotPPG_SPO2()
-		elif plotName == "s_imp":
-			self._plotTTI()
-		elif plotName == "s_vent":
-			self._plotVent()
-		elif plotName == "s_bcg1":
-			self._plotBCG1()
-		elif plotName == "s_bcg2":
-			self._plotBCG2()
+		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)	
+		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+
+		if self.name == "s_ecg":
+			self._setAnnotations(x_start=self.x_start, x_end=self.x_end)
+			#TODO: Seb
+			self._plotQRS()
 		"""
 		self.computeIncrements()
 		self.clear()
@@ -184,13 +176,13 @@ class GraphWidget(pg.PlotWidget):
 		"""
 	#TODO: Sett opp standard grafer slik de er i MatLab og legg felles funksjonalitet i plotSection() eller liknende. Emil.
 	#Om det er en graf her som ikke skal være her, så kommenter den ut herfra og resten av koden.
-	def _plotECG(self):
-		#TODO:YLim må settes for hvert plott.
-		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)	
-		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-		self._setAnnotations(x_start=self.x_start, x_end=self.x_end)
-		#TODO: Seb
-		self._plotQRS()
+	# def _plotECG(self):
+	# 	#TODO:YLim må settes for hvert plott.
+	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)	
+	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+	# 	self._setAnnotations(x_start=self.x_start, x_end=self.x_end)
+	# 	#TODO: Seb
+	# 	self._plotQRS()
 
 	def _plotQRS(self):
 		#print("Plotting QRS")
@@ -216,10 +208,10 @@ class GraphWidget(pg.PlotWidget):
 			#TODO plott inn rektangler ved bruk av i_qrs og sirkler ved bruk av t_qrs
 			return only_qrs_points
 
-	def _plotCO2(self):
-		#TODO:YLim må settes for hvert plott.
-		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+	# def _plotCO2(self):
+	# 	#TODO:YLim må settes for hvert plott.
+	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
+	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 
 	#TODO: Seb
 	def _plotCOPoints(self, slider_value):
@@ -240,20 +232,20 @@ class GraphWidget(pg.PlotWidget):
 		#graphDot(x=t_min, y=s_CO2(n_min))
 		#graphDot(x=t_max, y=s_CO2(n_max))
 
-	def _plotPPG_SPO2(self):
-		#TODO:YLim må settes for hvert plott.
-		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+	# def _plotPPG_SPO2(self):
+	# 	#TODO:YLim må settes for hvert plott.
+	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
+	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 
-	def _plotTTI(self):
-		#TODO:YLim må settes for hvert plott.
-		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+	# def _plotTTI(self):
+	# 	#TODO:YLim må settes for hvert plott.
+	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
+	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 
-	def _plotVent(self):
-		#TODO:YLim må settes for hvert plott.
-		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+	# def _plotVent(self):
+	# 	#TODO:YLim må settes for hvert plott.
+	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
+	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 		
 		#TODO: Seb
 		"""
@@ -273,15 +265,15 @@ class GraphWidget(pg.PlotWidget):
 			#graphDot(x=t_vent, y=s_vent[int(round(t_vent*handles.fs)+1)])
 			#TODO plott inn rektangler ved bruk av i_qrs og sirkler ved bruk av t_qrs
 		"""
-	def _plotBCG1(self):
-		#TODO:YLim må settes for hvert plott.
-		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+	# def _plotBCG1(self):
+	# 	#TODO:YLim må settes for hvert plott.
+	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
+	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 
-	def _plotBCG2(self):
-		#TODO:YLim må settes for hvert plott.
-		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+	# def _plotBCG2(self):
+	# 	#TODO:YLim må settes for hvert plott.
+	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
+	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 
 	def _setAnnotations(self, x_start, x_end):
 		anns = self.case["metadata"]["ann"]
