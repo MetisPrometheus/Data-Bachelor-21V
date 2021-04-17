@@ -110,6 +110,31 @@ class MW_GraphCollection(qtw.QWidget):
 		self.slider.setMaximum(total_increments)
 		return total_increments
 		
+	def eventFilter(self, o, e):
+		if e.type() == 3: #3 = MouseRelease
+			# print(self)
+			x_range = self.graphs["s_ecg"].viewRange()[0]
+			window_length = math.floor(x_range[1] - x_range[0])
+			print(window_length)
+			increments = self.computeIncrements(window_length)
+
+			#Loop through plotwidgets and fill with new case data
+			for signal, graphObj in self.graphs.items():
+				graphObj.computeIncrements(window_length)
+				if x_range[0] < 0:
+					x_range[0] = 0
+				graphObj.plotPosition(math.floor(x_range[0]))
+
+			#Set slider to nearest tick from the current position
+			inc_step = window_length/5
+			nearest_inc = math.floor(x_range[0]/inc_step)
+			self.slider.blockSignals(True)
+			self.slider.setValue(nearest_inc)
+			self.slider.blockSignals(False)
+		elif e.type() == 82: #82 = Zoom release but event 3 always run before 82
+			print("zoom done")
+		return False
+
 	def plotGraphs(self, case):
 		self.settings = case["settings"]
 		date = case["metadata"]["rec_date"]
@@ -129,6 +154,7 @@ class MW_GraphCollection(qtw.QWidget):
 				self.dock_area.addDock(self.docks[signal], "bottom")
 				#Make a graph for every signal and assign them to their own docks
 				self.graphs[signal] = GraphWidget(signal)
+				self.graphs[signal].viewport().installEventFilter(self)
 				self.graphs[signal].getAxis("left").setWidth(w=25)
 				self.graphs[signal].setMouseEnabled(x=True, y=False)
 				self.docks[signal].addWidget(self.graphs[signal])
@@ -152,8 +178,10 @@ class MW_GraphCollection(qtw.QWidget):
 		for signal in case["settings"]["checkboxes"].keys():
 			if case["settings"]["checkboxes"][signal]:
 				self.docks[signal].show()
+				self.graphs[signal].show()
 			else:
 				self.docks[signal].hide()
+				self.graphs[signal].hide()
 
 		#After plotting new cases set the slider value back to 0
 		self.slider.setValue(0)
