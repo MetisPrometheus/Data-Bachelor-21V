@@ -119,19 +119,19 @@ class GraphWidget(pg.PlotWidget):
 	def plotSection(self, slider_value=0):
 		plotName = self.name
 		if plotName == "s_ecg":
-			self._plotECG(slider_value)
+			self._plotECG()
 		elif plotName == "s_CO2":
-			self._plotCO2(slider_value)
+			self._plotCO2()
 		elif plotName == "s_ppg":
-			 self._plotPPG_SPO2(slider_value)
+			 self._plotPPG_SPO2()
 		elif plotName == "s_imp":
-			self._plotTTI(slider_value)
+			self._plotTTI()
 		elif plotName == "s_vent":
-			self._plotVent(slider_value)
+			self._plotVent()
 		elif plotName == "s_bcg1":
-			self._plotBCG1(slider_value)
+			self._plotBCG1()
 		elif plotName == "s_bcg2":
-			self._plotBCG2(slider_value)
+			self._plotBCG2()
 		"""
 		self.computeIncrements()
 		self.clear()
