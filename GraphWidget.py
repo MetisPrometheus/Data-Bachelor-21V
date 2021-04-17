@@ -107,7 +107,7 @@ class GraphWidget(pg.PlotWidget):
 		h, m, s = hms.split(":")
 		print(f"x_start: {self.x_start}, x_end: {self.x_end}")
 		self.plotSection()
-	
+
 	def plotSection(self, slider_value=0):
 		plotName = self.name
 		if plotName == "s_ecg":
@@ -176,28 +176,11 @@ class GraphWidget(pg.PlotWidget):
 		"""
 	#TODO: Sett opp standard grafer slik de er i MatLab og legg felles funksjonalitet i plotSection() eller liknende. Emil.
 	#Om det er en graf her som ikke skal være her, så kommenter den ut herfra og resten av koden.
-	def _plotECG(self, slider_value):
+	def _plotECG(self):
 		#TODO:YLim må settes for hvert plott.
 		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)	
-		self.computeIncrements()
-		low = math.floor(slider_value/5)
-		remainder = slider_value%5	
-
-		x_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
-		x_end = x_start + self.window_length
-
-		if slider_value == self.total_increments:
-			x_end = len(self.case["data"][self.name])
-			x_start = x_end - self.window_length
-
-		time = list(range(x_start, x_end))
-
-		hms = self.start_time[1:8]
-		miliseconds = self.start_time[9:11]
-		h, m, s = hms.split(":")
-		print(f"x_start: {x_start}, x_end: {x_end}")
-		self.plot(time, self.case["data"][self.name][x_start:x_end], pen=self.pen)
-		self._setAnnotations(x_start=x_start, x_end=x_end)
+		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+		self._setAnnotations(x_start=self.x_start, x_end=self.x_end)
 		#TODO: Seb
 		self._plotQRS()
 
@@ -225,26 +208,11 @@ class GraphWidget(pg.PlotWidget):
 			#TODO plott inn rektangler ved bruk av i_qrs og sirkler ved bruk av t_qrs
 			return only_qrs_points
 
-	def _plotCO2(self, slider_value):
+	def _plotCO2(self):
 		#TODO:YLim må settes for hvert plott.
 		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-		self.computeIncrements()
-		low = math.floor(slider_value/5)
-		remainder = slider_value%5
-
-		x_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
-		x_end = x_start + self.window_length
-
-		if slider_value == self.total_increments:
-			x_end = len(self.case["data"][self.name])
-			x_start = x_end - self.window_length
-
-		time = list(range(x_start, x_end))
-
-		hms = self.start_time[1:8]
-		miliseconds = self.start_time[9:11]
-		h, m, s = hms.split(":")
-		self.plot(time, self.case["data"][self.name][x_start:x_end], pen=self.pen)
+		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+		
 	#TODO: Seb
 	def _plotCOPoints(self, slider_value):
 		#print("Plotting COPoints")
@@ -264,68 +232,20 @@ class GraphWidget(pg.PlotWidget):
 		#graphDot(x=t_min, y=s_CO2(n_min))
 		#graphDot(x=t_max, y=s_CO2(n_max))
 
-	def _plotPPG_SPO2(self, slider_value):
+	def _plotPPG_SPO2(self):
 		#TODO:YLim må settes for hvert plott.
 		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-		self.computeIncrements()
-		low = math.floor(slider_value/5)
-		remainder = slider_value%5
+		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 
-		x_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
-		x_end = x_start + self.window_length
-
-		if slider_value == self.total_increments:
-			x_end = len(self.case["data"][self.name])
-			x_start = x_end - self.window_length
-
-		time = list(range(x_start, x_end))
-
-		hms = self.start_time[1:8]
-		miliseconds = self.start_time[9:11]
-		h, m, s = hms.split(":")
-		self.plot(time, self.case["data"][self.name][x_start:x_end], pen=self.pen)
-
-	def _plotTTI(self, slider_value):
+	def _plotTTI(self):
 		#TODO:YLim må settes for hvert plott.
 		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-		self.computeIncrements()
-		low = math.floor(slider_value/5)
-		remainder = slider_value%5
+		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 
-		x_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
-		x_end = x_start + self.window_length
-
-		if slider_value == self.total_increments:
-			x_end = len(self.case["data"][self.name])
-			x_start = x_end - self.window_length
-
-		time = list(range(x_start, x_end))
-
-		hms = self.start_time[1:8]
-		miliseconds = self.start_time[9:11]
-		h, m, s = hms.split(":")
-		self.plot(time, self.case["data"][self.name][x_start:x_end], pen=self.pen)
-
-	def _plotVent(self, slider_value):
+	def _plotVent(self):
 		#TODO:YLim må settes for hvert plott.
 		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-		self.computeIncrements()
-		low = math.floor(slider_value/5)
-		remainder = slider_value%5
-
-		x_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
-		x_end = x_start + self.window_length
-
-		if slider_value == self.total_increments:
-			x_end = len(self.case["data"][self.name])
-			x_start = x_end - self.window_length
-
-		time = list(range(x_start, x_end))
-
-		hms = self.start_time[1:8]
-		miliseconds = self.start_time[9:11]
-		h, m, s = hms.split(":")
-		self.plot(time, self.case["data"][self.name][x_start:x_end], pen=self.pen)
+		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 		
 		#TODO: Seb
 		"""
@@ -345,48 +265,15 @@ class GraphWidget(pg.PlotWidget):
 			#graphDot(x=t_vent, y=s_vent[int(round(t_vent*handles.fs)+1)])
 			#TODO plott inn rektangler ved bruk av i_qrs og sirkler ved bruk av t_qrs
 		"""
-	def _plotBCG1(self, slider_value):
+	def _plotBCG1(self):
 		#TODO:YLim må settes for hvert plott.
 		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-		self.computeIncrements()
-		low = math.floor(slider_value/5)
-		remainder = slider_value%5
+		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 
-		x_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
-		x_end = x_start + self.window_length
-
-		if slider_value == self.total_increments:
-			x_end = len(self.case["data"][self.name])
-			x_start = x_end - self.window_length
-
-
-		time = list(range(x_start, x_end))
-
-		hms = self.start_time[1:8]
-		miliseconds = self.start_time[9:11]
-		h, m, s = hms.split(":")
-		self.plot(time, self.case["data"][self.name][x_start:x_end], pen=self.pen)
-
-	def _plotBCG2(self, slider_value):
+	def _plotBCG2(self):
 		#TODO:YLim må settes for hvert plott.
 		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-		self.computeIncrements()
-		low = math.floor(slider_value/5)
-		remainder = slider_value%5
-
-		x_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
-		x_end = x_start + self.window_length
-
-		if slider_value == self.total_increments:
-			x_end = len(self.case["data"][self.name])
-			x_start = x_end - self.window_length
-
-		time = list(range(x_start, x_end))
-
-		hms = self.start_time[1:8]
-		miliseconds = self.start_time[9:11]
-		h, m, s = hms.split(":")
-		self.plot(time, self.case["data"][self.name][x_start:x_end], pen=self.pen)
+		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 
 	def _setAnnotations(self, x_start, x_end):
 		anns = self.case["metadata"]["ann"]
