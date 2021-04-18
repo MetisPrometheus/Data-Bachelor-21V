@@ -117,13 +117,26 @@ class GraphWidget(pg.PlotWidget):
 		self.plotSection()
 
 	def plotSection(self, slider_value=0):
-		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)	
-		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+		#TODO: Egen funksjon med percentiles og slikt i matlab.
+		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
 
+		#TODO: Når nye checkboxes kommer må ifene bli endret på.
 		if self.name == "s_ecg":
+			self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+			self._plotQRS(self.x_start, self.x_end)
 			self._setAnnotations(x_start=self.x_start, x_end=self.x_end)
-			#TODO: Seb
-			self._plotQRS()
+		elif self.name == "s_vent":
+			if True:
+				self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+				self._plotVent(self.x_start, self.x_end)
+			if False:
+				self.plot(self.time, self.case["data"]["s_imp"][self.x_start:self.x_end], pen=self.pen)
+		elif self.name == "s_CO2":
+			self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+			self._plotCOPoints(self.x_start, self.x_end)
+		else:
+			self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+				
 		"""
 		self.computeIncrements()
 		self.clear()
@@ -174,106 +187,65 @@ class GraphWidget(pg.PlotWidget):
 
 		self.plot(time, self.case["data"][self.name][x_start:x_end])
 		"""
-	#TODO: Sett opp standard grafer slik de er i MatLab og legg felles funksjonalitet i plotSection() eller liknende. Emil.
-	#Om det er en graf her som ikke skal være her, så kommenter den ut herfra og resten av koden.
-	# def _plotECG(self):
-	# 	#TODO:YLim må settes for hvert plott.
-	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)	
-	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-	# 	self._setAnnotations(x_start=self.x_start, x_end=self.x_end)
-	# 	#TODO: Seb
-	# 	self._plotQRS()
-
-	def _plotQRS(self):
+	def _plotQRS(self, x_start, x_end):
 		#print("Plotting QRS")
 		t_qrs = self.case["metadata"]["t_qrs"]
-		only_qrs_points = list()
-		i_qrs = list()
+		s_ecg = self.case["data"]["s_ecg"]
 
-		for i in range(len(t_qrs)):
-			i_qrs.append(list(t_qrs[i][j] for j in [0, 2]))
-			only_qrs_points.append(t_qrs[i][1])
-
-		self.roi = pg.ROI([10, 100], size=50)
-
-		self.addItem(self.roi)
-		#Sjekk om lista er tom. Spør hva dette er til.
-		if not i_qrs:
-			pass
-			#TODO legg til NaN eller ignorer.
-		else:
-			pass
-			#Verdt å merke seg at vi her også må bruke handles.s_ecg for signal for y-akse.
-			#graphDot(x=t_qrs, y=s_ecg[int(round(t_qrs*handles.fs)+1)])
-			#TODO plott inn rektangler ved bruk av i_qrs og sirkler ved bruk av t_qrs
-			return only_qrs_points
-
+		for entry in t_qrs:
+			x0 = int(np.round(entry[0]*self.frequency) + 1)
+			x1 = int(np.round(entry[2]*self.frequency) + 1)
+			xPoint = int(np.round(entry[1]*self.frequency))
+		#Hvis Entry ender i vårt område eller starter i vårt område
+			if x1 >= x_start and x0 <= x_end:
+				mySlice = pg.ROI((x0, -10), (x1 - x0, 20), pen=(0, 200, 200))
+				self.addItem(mySlice)
+			if xPoint >= x_start and xPoint <= x_end:
+				myCircle = pg.CircleROI((xPoint - 50, s_ecg[xPoint] - 0.125), (100, 0.25), pen=(150, 150, 0))
+				self.addItem(myCircle)
 	# def _plotCO2(self):
 	# 	#TODO:YLim må settes for hvert plott.
 	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
 	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 
-	#TODO: Seb
-	def _plotCOPoints(self, slider_value):
+	def _plotVent(self, x_start, x_end):
+		t_vent = self.case["metadata"]["t_vent"]
+		s_vent = self.case["data"]["s_vent"]
+
+		for entry in t_vent:
+			x0 = int(np.round(entry[0]*self.frequency) + 1)
+			x1 = int(np.round(entry[2]*self.frequency) + 1)
+			xPoint = int(np.round(entry[1]*self.frequency))
+		#Hvis Entry ender i vårt område eller starter i vårt område
+			if x1 >= x_start and x0 <= x_end:
+				mySlice = pg.ROI((x0, -10), (x1 - x0, 20), pen=(0, 200, 200))
+				self.addItem(mySlice)
+			if xPoint >= x_start and xPoint <= x_end:
+				myCircle = pg.CircleROI((xPoint - 50, s_vent[xPoint] - 0.125), (100, 0.25), pen=(150, 150, 0))
+				self.addItem(myCircle)
+
+	#TODO: Seb Her blir det tidsforskyvninger. Dette må implementeres bedre når vi får
+	#på plass bokser for BCG/CO2 forskyvning osv.
+	def _plotCOPoints(self, x_start, x_end):
 		#print("Plotting COPoints")
 		t_cap = self.case["metadata"]["t_cap"]
-		t_CO2 = self.case["metadata"]["t_CO2"]
-		n_min = []
-		n_max = []
-		t_min = []
-		t_max = []
-		for item in t_cap:
-			n_min.append(int(round(item[0]*self.frequency)) + 1)
-			t_min.append(item[0] + t_CO2)
-			n_max.append(int(round(item[1]*self.frequency)) + 1)
-			t_max.append(item[1] + t_CO2)
+		t_CO2 = self.case["metadata"]["t_CO2"] #Tidsforskyvning
+		s_CO2 = self.case["data"]["s_CO2"]
 
+		for item in t_cap:
+			nMin = int(round(item[0]*self.frequency) + 1)
+			#t_min.append(item[0] + t_CO2)
+			nMax = int(round(item[1]*self.frequency) + 1)
+			#t_max.append(item[1] + t_CO2)
+			if nMin <= x_end and nMin >= x_start:
+				myCircle = pg.CircleROI((nMin - 25, s_CO2[nMin] - 5), (50, 10), pen=(255, 0, 0))
+				self.addItem(myCircle)
+			if nMax <= x_end and nMax >= x_start:
+				myCircle = pg.CircleROI((nMax - 25, s_CO2[nMax] - 5), (50, 10), pen=(0, 255, 0))
+				self.addItem(myCircle)
 		#TODO plott inn min og maks punkter på graf.
 		#graphDot(x=t_min, y=s_CO2(n_min))
 		#graphDot(x=t_max, y=s_CO2(n_max))
-
-	# def _plotPPG_SPO2(self):
-	# 	#TODO:YLim må settes for hvert plott.
-	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-
-	# def _plotTTI(self):
-	# 	#TODO:YLim må settes for hvert plott.
-	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-
-	# def _plotVent(self):
-	# 	#TODO:YLim må settes for hvert plott.
-	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-		
-		#TODO: Seb
-		"""
-		#print("Plotting Vent")
-		t_vent = self.values["t_vent"]
-		i_vent = list()
-		for i in range(len(t_vent)):
-			i_vent.append(list(t_vent[i][j] for j in [0, 2]))
-			i_vent[i] = t_vent[i][1]
-		#Sjekk om lista er tom. Spør hva dette er til.
-		if not i_vent:
-			pass
-			#TODO legg til NaN eller ignorer.
-		else:
-			pass
-			#Verdt å merke seg at vi her også må bruke handles.s_vent for signal for y-akse.
-			#graphDot(x=t_vent, y=s_vent[int(round(t_vent*handles.fs)+1)])
-			#TODO plott inn rektangler ved bruk av i_qrs og sirkler ved bruk av t_qrs
-		"""
-	# def _plotBCG1(self):
-	# 	#TODO:YLim må settes for hvert plott.
-	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-
-	# def _plotBCG2(self):
-	# 	#TODO:YLim må settes for hvert plott.
-	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 
 	def _setAnnotations(self, x_start, x_end):
 		anns = self.case["metadata"]["ann"]

@@ -151,7 +151,7 @@ class DataController(qtw.QWidget):
 			for element in checkboxes:
 				#New data signals are added and set to True and will not overwrite previously saved signals
 				#Frequency is not a signal, so do NOT add it to checkboxes.
-				if element != "fs" and element not in self.settings["checkboxes"]:
+				if element != "fs" and element != "s_imp" and element not in self.settings["checkboxes"]:
 					self.settings["checkboxes"][element] = True
 			#Save the settings to a txt.file in JSON format located in the same directory as the .exe file
 			json.dump(self.settings, f)

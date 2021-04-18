@@ -147,7 +147,7 @@ class MW_GraphCollection(qtw.QWidget):
 		print("case[data]: ", case["data"])
 		# Make a new plotwidget for new signals
 		for signal in case["data"].keys():
-			if signal not in self.graphs.keys() and signal != "fs":
+			if signal not in self.graphs.keys() and signal != "fs" and signal != "s_imp":
 				#Prepare a dock for the graphs and add it to the dock wrapper
 				dock_name = signal.split("_")[-1].upper()
 				self.docks[signal] = Dock(f"{dock_name}")
