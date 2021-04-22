@@ -34,9 +34,25 @@ class MainWindow(qtw.QWidget):
 
 		# -------- Layouts --------
 		#Wrap a main_layout around the top-, body- and bottom part of the GUI
-		self.main_layout = qtw.QVBoxLayout()
-		self.main_layout.addWidget(self.MW_Controls)
-		self.main_layout.addWidget(self.MW_GraphCollection)
+		self.main_layout = qtw.QHBoxLayout()
+		self.graph_layout = qtw.QVBoxLayout()
+		self.left_bar_layout = qtw.QVBoxLayout()
+		
+		self.checkboxe1 = qtw.QCheckBox("QRS")
+		self.checkboxe2 = qtw.QCheckBox("VENT WF")
+		self.checkboxe3 = qtw.QCheckBox("CO2 ANNOT")
+		self.checkboxe4 = qtw.QCheckBox("TERMINATION")
+
+
+		self.left_bar_layout.addWidget(self.checkboxes1)
+		self.left_bar_layout.addWidget(self.checkboxes2)
+		self.left_bar_layout.addWidget(self.checkboxes3)
+		self.left_bar_layout.addWidget(self.checkboxes4)
+		
+		self.main_layout.addLayout(self.left_bar_layout)
+		self.main_layout.addLayout(self.graph_layout)
+		self.graph_layout.addWidget(self.MW_Controls)
+		self.graph_layout.addWidget(self.MW_GraphCollection)
 		self.setLayout(self.main_layout)
 
 	#Pass along the received filenames to the controls widget
