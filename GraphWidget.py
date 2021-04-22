@@ -2,6 +2,9 @@
 import math
 import numpy as np
 
+#Own libraries
+from Utility import Utility
+
 #3rd Party Libraries
 import pyqtgraph as pg
 
@@ -191,6 +194,19 @@ class GraphWidget(pg.PlotWidget):
 		#print("Plotting QRS")
 		t_qrs = self.case["metadata"]["t_qrs"]
 		s_ecg = self.case["data"]["s_ecg"]
+		
+		xyRatios = Utility.getRangeRatio(self.getViewBox())
+		"""Beregning av størrelser for sirkler.
+		print("PLOT QRS")
+		print("ViewBox ranges:" + str(self.getViewBox().state["viewRange"]))
+		print(
+			"Pixels height: " + str(self.getViewBox().boundingRect().height()) + 
+			" & Pixels width: " + str(self.getViewBox().boundingRect().width())
+			)
+		print(str(xyRatios))
+		"""
+		sizeX = xyRatios["ratioX"]/np.log10(xyRatios["diff"])
+		sizeY = xyRatios["ratioY"]/np.log10(xyRatios["diff"])
 
 		for entry in t_qrs:
 			x0 = int(np.round(entry[0]*self.frequency) + 1)
@@ -201,7 +217,7 @@ class GraphWidget(pg.PlotWidget):
 				mySlice = pg.ROI((x0, -10), (x1 - x0, 20), pen=(0, 200, 200))
 				self.addItem(mySlice)
 			if xPoint >= x_start and xPoint <= x_end:
-				myCircle = pg.CircleROI((xPoint - 50, s_ecg[xPoint] - 0.125), (100, 0.25), pen=(150, 150, 0))
+				myCircle = pg.CircleROI((xPoint - sizeX*.5, s_ecg[xPoint] - sizeY*.5), (sizeX, sizeY), pen=(150, 150, 0))
 				self.addItem(myCircle)
 	# def _plotCO2(self):
 	# 	#TODO:YLim må settes for hvert plott.
@@ -211,6 +227,10 @@ class GraphWidget(pg.PlotWidget):
 	def _plotVent(self, x_start, x_end):
 		t_vent = self.case["metadata"]["t_vent"]
 		s_vent = self.case["data"]["s_vent"]
+		
+		xyRatios = Utility.getRangeRatio(self.getViewBox())
+		sizeX = xyRatios["ratioX"]/np.log10(xyRatios["diff"])
+		sizeY = xyRatios["ratioY"]/np.log10(xyRatios["diff"])
 
 		for entry in t_vent:
 			x0 = int(np.round(entry[0]*self.frequency) + 1)
@@ -221,7 +241,7 @@ class GraphWidget(pg.PlotWidget):
 				mySlice = pg.ROI((x0, -10), (x1 - x0, 20), pen=(0, 200, 200))
 				self.addItem(mySlice)
 			if xPoint >= x_start and xPoint <= x_end:
-				myCircle = pg.CircleROI((xPoint - 50, s_vent[xPoint] - 0.125), (100, 0.25), pen=(150, 150, 0))
+				myCircle = pg.CircleROI((xPoint - sizeX*0.5, s_vent[xPoint] - sizeY*.5), (sizeX, sizeY), pen=(150, 150, 0))
 				self.addItem(myCircle)
 
 	#TODO: Seb Her blir det tidsforskyvninger. Dette må implementeres bedre når vi får
@@ -231,6 +251,10 @@ class GraphWidget(pg.PlotWidget):
 		t_cap = self.case["metadata"]["t_cap"]
 		t_CO2 = self.case["metadata"]["t_CO2"] #Tidsforskyvning
 		s_CO2 = self.case["data"]["s_CO2"]
+		
+		xyRatios = Utility.getRangeRatio(self.getViewBox())
+		sizeX = xyRatios["ratioX"]/np.log10(xyRatios["diff"])
+		sizeY = xyRatios["ratioY"]/np.log10(xyRatios["diff"])
 
 		for item in t_cap:
 			nMin = int(round(item[0]*self.frequency) + 1)
@@ -238,10 +262,10 @@ class GraphWidget(pg.PlotWidget):
 			nMax = int(round(item[1]*self.frequency) + 1)
 			#t_max.append(item[1] + t_CO2)
 			if nMin <= x_end and nMin >= x_start:
-				myCircle = pg.CircleROI((nMin - 25, s_CO2[nMin] - 5), (50, 10), pen=(255, 0, 0))
+				myCircle = pg.CircleROI((nMin - sizeX*.5, s_CO2[nMin] - sizeY*.5), (sizeX, sizeY), pen=(255, 0, 0))
 				self.addItem(myCircle)
 			if nMax <= x_end and nMax >= x_start:
-				myCircle = pg.CircleROI((nMax - 25, s_CO2[nMax] - 5), (50, 10), pen=(0, 255, 0))
+				myCircle = pg.CircleROI((nMax - sizeX*.5, s_CO2[nMax] - sizeY*.5), (sizeX, sizeY), pen=(0, 255, 0))
 				self.addItem(myCircle)
 		#TODO plott inn min og maks punkter på graf.
 		#graphDot(x=t_min, y=s_CO2(n_min))

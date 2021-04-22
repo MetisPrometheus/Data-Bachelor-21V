@@ -39,3 +39,19 @@ class Utility(object):
             return True
         else:
             return False
+
+    @staticmethod
+    def getRangeRatio(vb):
+        #Sjekk hvilket spenn er minst. Del så begge spenn med dette.
+        xyArray = vb.state["viewRange"]
+        xPixels = vb.boundingRect().width()
+        yPixels = vb.boundingRect().height()
+        
+        diffX = abs(xyArray[0][1] - xyArray[0][0])
+        diffY = abs(xyArray[1][1] - xyArray[1][0])
+        #For det meste så vil Y spennet være mindre enn X, så start med dette for å spare tid.
+        #Ikke sløs tid på å beregne diffY/diffY, heller.
+        if diffY < diffX:
+            return { "diff": diffX, "diffX": diffX, "diffY": diffY, "ratioX": diffX*diffY*.40/(diffY*xPixels/yPixels), "ratioY": diffY*.25 }
+        else:
+            return { "diff": diffY, "diffX": diffX, "diffY": diffY, "ratioX": diffX*.40, "ratioY": (diffY/diffX)/(yPixels/xPixels) }
