@@ -36,10 +36,10 @@ class MainWindow(qtw.QWidget):
 		self.graph_layout = qtw.QVBoxLayout()
 		self.left_bar_layout = qtw.QVBoxLayout()
 		
-		self.checkboxe1 = qtw.QCheckBox("QRS")
-		self.checkboxe2 = qtw.QCheckBox("VENT WF")
-		self.checkboxe3 = qtw.QCheckBox("CO2 ANNOT")
-		self.checkboxe4 = qtw.QCheckBox("TERMINATION")
+		self.checkboxes1 = qtw.QCheckBox("QRS")
+		self.checkboxes2 = qtw.QCheckBox("VENT WF")
+		self.checkboxes3 = qtw.QCheckBox("CO2 ANNOT")
+		self.checkboxes4 = qtw.QCheckBox("TERMINATION")
 
 		self.left_bar_layout.addWidget(self.checkboxes1)
 		self.left_bar_layout.addWidget(self.checkboxes2)
