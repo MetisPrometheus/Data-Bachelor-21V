@@ -46,12 +46,23 @@ class GraphWidget(pg.PlotWidget):
 
 	def storeData(self, case):
 		self.case = case
-		self.setLimits(xMax=len(self.case["data"][self.name]))
+		self.setLimits(xMax=len(self.case["data"][self.name])+500)
+		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
 		self.computeIncrements()
 		self.plotSlider()
 
-	def setSpan(self, new_span):
+	def setSpan(self, new_span, old_slider):
+		#Calculate by what factor the window has been scaled
 		self.span = new_span
+		old_window = self.window_length
+		self.computeIncrements()
+		factor = old_window/self.window_length
+
+		#Use the factor to roughly decide where the new slider value should be
+		new_slider = math.floor(old_slider*factor)
+		if new_slider > self.total_increments:
+			new_slider = self.total_increments		
+		self.plotSlider(new_slider)
 
 	def setFrequency(self, sample_rate):
 		self.frequency = sample_rate
@@ -90,6 +101,7 @@ class GraphWidget(pg.PlotWidget):
 
 	#Plotting graphs after moving the slider
 	def plotSlider(self, slider_value=0):
+		self.clear()
 		data_length = len(self.case["data"][self.name])
 		low = math.floor(slider_value/5)
 		remainder = slider_value%5	
@@ -99,9 +111,12 @@ class GraphWidget(pg.PlotWidget):
 		viewbox_end = viewbox_start + self.window_length
 
 		if slider_value == self.total_increments:
-			viewbox_end = data_length
+			viewbox_end = data_length+math.floor(self.window_length/10)
 			viewbox_start = viewbox_end - self.window_length
-		self.setXRange(viewbox_start, viewbox_end)
+		elif slider_value == 0:
+			viewbox_start = -math.floor(self.window_length/10)
+			viewbox_end = viewbox_start + self.window_length
+		self.setXRange(viewbox_start, viewbox_end, 0)
 
 		#Set the range of the plotted part of the graph
 		self.x_start = viewbox_start - self.window_length
@@ -116,7 +131,6 @@ class GraphWidget(pg.PlotWidget):
 		hms = self.start_time[1:8]
 		miliseconds = self.start_time[9:11]
 		h, m, s = hms.split(":")
-		print(f"x_start: {self.x_start}, x_end: {self.x_end}")
 		self.plotSection()
 
 	def plotSection(self, slider_value=0):

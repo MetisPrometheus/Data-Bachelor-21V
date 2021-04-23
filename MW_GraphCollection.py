@@ -22,7 +22,7 @@ class MW_GraphCollection(qtw.QWidget):
 	slider_incs_submitted = qtc.pyqtSignal(int)
 	span_submitted = qtc.pyqtSignal(int)
 
-	old_span = 60
+	span = 60
 	data_length = None
 	settings = {}
 
@@ -74,24 +74,13 @@ class MW_GraphCollection(qtw.QWidget):
 		self.slider_max = increments
 		self.slider.setMaximum(self.slider_max)
 
-
 	def receiveNewSpan(self, new_span):
 		print(f"changed to new span: {new_span}")
-		factor = self.old_span/new_span
-		self.old_span = new_span
-
-		old_slide = self.slider.value()
-		new_slide = math.floor(old_slide*factor)
-
-		max_increment = self.computeIncrements()
-		if new_slide > max_increment:
-			new_slide = max_increment
-
+		self.span = new_span
+		slider_value = self.slider.value()
 		for key, graphObj in self.graphs.items():
-			graphObj.setSpan(new_span)
-
-		self.slider.setValue(new_slide)	
-		
+			graphObj.setSpan(new_span, slider_value)
+		self.computeIncrements()
 
 	def setDataLength(self, data_length):
 		self.data_length = data_length
@@ -101,7 +90,7 @@ class MW_GraphCollection(qtw.QWidget):
 		#Calculate window_length based on frequency (250) and timeframe (60)
 		frequency = 250
 		if window_length == 0:
-			window_length = frequency*self.old_span
+			window_length = frequency*self.span
 		complete_sections = math.floor(self.data_length/window_length) - 1
 		total_increments = complete_sections*5 #Increments will slide graph by 20%
 
@@ -115,8 +104,8 @@ class MW_GraphCollection(qtw.QWidget):
 			# print(self)
 			x_range = self.graphs["s_ecg"].viewRange()[0]
 			window_length = math.floor(x_range[1] - x_range[0])
-			print(window_length)
 			increments = self.computeIncrements(window_length)
+			print(window_length)
 
 			#Loop through plotwidgets and fill with new case data
 			for signal, graphObj in self.graphs.items():
@@ -133,6 +122,8 @@ class MW_GraphCollection(qtw.QWidget):
 			self.slider.blockSignals(False)
 		elif e.type() == 82: #82 = Zoom release but event 3 always run before 82
 			print("zoom done")
+			for signal, graphObj in self.graphs.items():
+				graphObj.updateAxis()
 		return False
 
 	def plotGraphs(self, case):
