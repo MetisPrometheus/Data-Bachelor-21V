@@ -50,6 +50,7 @@ class GraphWidget(pg.PlotWidget):
 		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
 		self.computeIncrements()
 		self.plotSlider()
+		self.updateAxis()
 
 	def setSpan(self, new_span, old_slider):
 		#Calculate by what factor the window has been scaled
@@ -63,6 +64,7 @@ class GraphWidget(pg.PlotWidget):
 		if new_slider > self.total_increments:
 			new_slider = self.total_increments		
 		self.plotSlider(new_slider)
+		self.updateAxis()
 
 	def setFrequency(self, sample_rate):
 		self.frequency = sample_rate
@@ -83,6 +85,11 @@ class GraphWidget(pg.PlotWidget):
 
 		incomplete_section = ((data_length/self.window_length)-(complete_sections+1))*10 #[0-10]
 		self.total_increments += math.ceil(incomplete_section/2)
+
+	def wheelEvent(self, ev):
+		#TODO make self.windowlength bigger or smaller then replot
+		zoom = True if ev.angleDelta().y() == 120 else False
+		print(zoom)
 
 	#Plotting graphs after panning/zooming
 	def plotPosition(self, viewbox_start):
@@ -153,57 +160,48 @@ class GraphWidget(pg.PlotWidget):
 			self._plotCOPoints(self.x_start, self.x_end)
 		else:
 			self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-				
-		"""
-		self.computeIncrements()
-		self.clear()
-		low = math.floor(slider_value/5)
-		remainder = slider_value%5
+		self.updateAxis()	
 
-		x_start = low*self.window_length + math.floor(remainder*(self.window_length/5))
-		x_end = x_start + self.window_length
+	def updateAxis(self):
+		h, m, s = [int(string) for string in self.start_time[1:8].split(":")]
+		ms = int(self.start_time[9:11])
 
-		if slider_value == self.total_increments:
-			x_end = len(self.case["data"][self.name])
-			x_start = x_end - self.window_length
+		tick_interval = math.floor(self.window_length/5)
+		tick_start = math.floor(self.x_start/tick_interval)*tick_interval
+		x_ticks = np.arange(tick_start, tick_start+15*tick_interval, tick_interval)
+		# x_ticks = np.arange(0, len(self.case["data"][self.name]), tick_interval)
 
-		time = list(range(x_start, x_end))
+		x_times = []
+		for x in x_ticks:
+			ms_total = x*4 + ms
+			ms_added = ms_total%1000
+			s_total = math.floor(ms_total/1000) + s
+			s_added = s_total%60
+			m_total = math.floor(s_total/60) + m
+			m_added = m_total%60
+			h_total = math.floor(m_total/60) + h
+			h_added = h_total%24
 
-		hms = self.start_time[1:8]
-		miliseconds = self.start_time[9:11]
-		h, m, s = hms.split(":")
+			if h_added < 10:
+				h_added = f"0{h_added}"
+			if m_added < 10:
+				m_added = f"0{m_added}"
+			if s_added < 10:
+				s_added = f"0{s_added}"
+			if ms_added < 10:
+				ms_added = f"00{ms_added}"
+			elif ms_added < 100:
+				ms_added = f"0{ms_added}"
 
-			#TODO USE DATETIME AS X AXIS ISNTEAD OF PLAIN NUMBERS
-		# print(f"h: {h}, m: {m}, s: {s}, ms: {ms}")
+			if tick_interval < 100:
+				x_times.append(f"{h_added}:{m_added}:{s_added}.{ms_added}")
+			else:
+				x_times.append(f"{h_added}:{m_added}:{s_added}")
 
-		# time2 = []
-		# for x in range(x_start, x_end):
-		# 	ms_total = x*4
-		# 	ms_added = ms_total%1000
-		# 	s_total = math.floor(ms_total/1000)
-		# 	s_added = s_total%60
-		# 	m_total = math.floor(s_total/60)
-		# 	m_added = m_total%60
-		# 	h_total = math.floor(m_total/60)
-		# 	h_added = h_total%24
-		# 	time2.append(f"{h}:{m}:{s}.{ms}")
+		ticks = [list(zip(x_ticks, x_times))]
+		axis = self.getAxis("bottom")
+		axis.setTicks(ticks)
 
-		# for x in range(x_start, x_end):
-		# 	time2.append(time.time())
-
-
-		# nums = list(range(x_start, x_end))
-		# strings = []
-		# for x in range(0, len(nums)):
-		# 	strings.append("yaaaas")
-
-		# ticks = [list(zip(nums, strings))]
-
-		# xax = self.getAxis("bottom")
-		# xax.setTicks(ticks)
-
-		self.plot(time, self.case["data"][self.name][x_start:x_end])
-		"""
 	def _plotQRS(self, x_start, x_end):
 		#print("Plotting QRS")
 		t_qrs = self.case["metadata"]["t_qrs"]
