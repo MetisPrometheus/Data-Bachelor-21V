@@ -107,7 +107,27 @@ class DataController(qtw.QWidget):
 
 		#Since this is the first case -> new_index = False (default value)
 		case = self.getCase()
+		
+	def updateTimelines(self, option, timeline):
+		if option == "Add":
+			#TODO (Emil/Sebbi)
+			'''
+			case["annotaitons"][timeline] = {} idk kaslags format det e lagra i men du fatte
+			'''
 
+		elif option == "Delete":
+			#TODO (Emil/Sebbi)
+			'''
+			del case["annotations"][timeline]
+			'''
+
+		elif option == "Edit":
+			#TODO (Emil/Sebbi)
+			'''
+			eksempel:
+			case["annotations"][new_timeline] = case["annotations"][old_timeline]
+			del case["annotations"][old_timeline]
+			'''
 
 	def getCaseNames(self):
 		return self.CASE_NAMES

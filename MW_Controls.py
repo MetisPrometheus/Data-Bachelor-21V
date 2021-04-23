@@ -7,6 +7,8 @@ from PyQt5 import QtCore as qtc
 
 class MW_Controls(qtw.QWidget):
 
+	request_timeline_window = qtc.pyqtSignal(str, str)
+
 	new_span = qtc.pyqtSignal(int)
 	new_case_index = qtc.pyqtSignal(int)
 	checkbox_signal = qtc.pyqtSignal(str, bool)
@@ -25,6 +27,13 @@ class MW_Controls(qtw.QWidget):
 		self.dropdown_cases.blockSignals(True)
 		self.dropdown_span.insertItems(0, span)
 		self.dropdown_cases.blockSignals(False)
+
+		self.dropdown_timelines = qtw.QComboBox(currentIndexChanged=self.changeTimeline)
+		self.dropdown_timelines.insertItems(0, ["Timeline 1", "Timeline 2", "Timeline 3"])
+
+		self.add_timeline = qtw.QPushButton("Add", clicked=lambda:self.requestTimelineSettings("Add"))
+		self.remove_timeline= qtw.QPushButton("Delete", clicked=lambda:self.requestTimelineSettings("Delete"))
+		self.edit_timeline = qtw.QPushButton("Edit", clicked=lambda:self.requestTimelineSettings("Edit"))
 
 		self.checkboxes = {}
 		self.checkboxes["s_ecg"] = qtw.QCheckBox("ECG (mV)", clicked=lambda:self.emitCheckboxState("s_ecg"))
@@ -47,11 +56,41 @@ class MW_Controls(qtw.QWidget):
 		self.dropdown_layout = qtw.QHBoxLayout()
 		self.dropdown_layout.addWidget(self.dropdown_cases)
 		self.dropdown_layout.addWidget(self.dropdown_span)
+		self.dropdown_layout.addWidget(self.dropdown_timelines)
+		self.dropdown_layout.addWidget(self.add_timeline)
+		self.dropdown_layout.addWidget(self.remove_timeline)
+		self.dropdown_layout.addWidget(self.edit_timeline)
 
 		self.top_layout = qtw.QHBoxLayout()
 		self.top_layout.addLayout(self.dropdown_layout)
 		self.top_layout.addLayout(self.check_layout)
 		self.setLayout(self.top_layout)
+
+	def requestTimelineSettings(self, option):
+		current_timeline = self.dropdown_timelines.currentText()
+		self.request_timeline_window.emit(option, current_timeline)
+
+	def updateTimelines(self, option, timeline):
+		if option == "Add":
+			last_index = self.dropdown_timelines.count()
+			self.dropdown_timelines.addItem(timeline)
+			self.dropdown_timelines.setCurrentIndex(last_index)
+
+		elif option == "Delete":
+			current_index = self.dropdown_timelines.currentIndex()
+			self.dropdown_timelines.removeItem(current_index)
+
+		elif option == "Edit":
+			current_index = self.dropdown_timelines.currentIndex()
+			self.dropdown_timelines.blockSignals(True)
+			self.dropdown_timelines.removeItem(current_index)
+			self.dropdown_timelines.insertItems(current_index, [timeline])
+			self.dropdown_timelines.setCurrentIndex(current_index)
+			self.dropdown_timelines.blockSignals(False)
+		'''
+		#TODO MAKE SURE ALL THIS IS UPDATED IN ANNOTATIONS OR WHEREVER THE FUCK ITS STORED (Emil/Sebbi)
+		Check MainApp.py, last comment 
+		'''
 
 	def showCheckboxes(self, checkboxes):
 		for element in checkboxes:
@@ -101,3 +140,10 @@ class MW_Controls(qtw.QWidget):
 		self.dropdown_cases.insertItems(0, filenames)
 		self.dropdown_cases.blockSignals(False)
 
+	def showTimelines(self, timelines):
+		self.dropdown_timelines.blockSignals(True)
+		self.dropdown_timelines.insertItems(0, timelines)
+		self.dropdown_timelines.blockSignals(False)
+
+	def changeTimeline(self, new_index):
+		print(f"Timeline index changed to: {new_index}")

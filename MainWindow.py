@@ -23,14 +23,12 @@ class MainWindow(qtw.QWidget):
 		self.MW_Controls = MW_Controls()
 		self.MW_GraphCollection = MW_GraphCollection()
 
-
 		# -------- Signals & Slots -------- 
 		#Receive checkbox signal from the controller widget and determine whether to toggle graphs on or off
 		self.MW_Controls.checkbox_signal.connect(self.MW_GraphCollection.receiveCheckboxSignal)
 		
 		#Receive new span and replot the graphs with a bigger or smaller section		
 		self.MW_Controls.new_span.connect(self.MW_GraphCollection.receiveNewSpan)
-
 
 		# -------- Layouts --------
 		#Wrap a main_layout around the top-, body- and bottom part of the GUI
@@ -43,7 +41,6 @@ class MainWindow(qtw.QWidget):
 		self.checkboxe3 = qtw.QCheckBox("CO2 ANNOT")
 		self.checkboxe4 = qtw.QCheckBox("TERMINATION")
 
-
 		self.left_bar_layout.addWidget(self.checkboxes1)
 		self.left_bar_layout.addWidget(self.checkboxes2)
 		self.left_bar_layout.addWidget(self.checkboxes3)
@@ -55,15 +52,16 @@ class MainWindow(qtw.QWidget):
 		self.graph_layout.addWidget(self.MW_GraphCollection)
 		self.setLayout(self.main_layout)
 
-	#Pass along the received filenames to the controls widget
+	#Pass along the filenames to its dropdown-menu in MW_Controls
 	def receiveFilenames(self, filenames):
 		self.MW_Controls.showCases(filenames)
 
+	#Pass along the timeline-names to its dropdown-menu in MW_Controls
+	def receiveTimelines(self, timelines):
+		self.MW_Controls.showTimelines(timelines)
+
 	def receiveNewCase(self, case):
 		#TODO: Fjern eller så må vi hente ut info i DataController.
-		#for key, value in case["info"].items():
-		#	print(f"infokey: {key} --- infovalue: {value}")
-
 		self.MW_Controls.createCheckboxes(case["settings"])
 		self.MW_GraphCollection.setDataLength(len(case["data"]["s_ecg"])) #Can use any signal (same length)
 		self.MW_GraphCollection.plotGraphs(case)
