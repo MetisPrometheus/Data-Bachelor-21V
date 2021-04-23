@@ -28,6 +28,9 @@ class MainApp(qtw.QApplication):
 		self.initial_window = InitialWindow()
 		self.initial_window.show()
 
+		#create window for adding/deleting timelines
+		self.timeline_window = TimelineSettings()
+
 		#create datacontroller object to return case data upon request
 		self.data_controller = DataController()
 
