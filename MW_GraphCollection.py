@@ -204,3 +204,12 @@ class MW_GraphCollection(qtw.QWidget):
 		#Set padding to NaN.
 		for key, value in case["data"].items():
 			case["data"][key] = np.where(value == np.inf, np.nan, value)
+
+	def Plot_QRS(self):
+		self.graphs["s_ecg"]._plotQRS()
+
+	def Plot_VENT(self):
+		self.graphs["s_vent"]._plotVent()
+
+	def Plot_CO2_POINTS(self):
+		self.graphs["s_CO2"]._plotCOPoints()

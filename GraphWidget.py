@@ -7,9 +7,11 @@ from Utility import Utility
 
 #3rd Party Libraries
 import pyqtgraph as pg
-
+from PyQt5 import QtCore as qtc
 
 class GraphWidget(pg.PlotWidget):
+	test_submitted = qtc.pyqtSignal(bool)
+
 	name = None
 	values = None
 	frequency = 250
@@ -147,17 +149,17 @@ class GraphWidget(pg.PlotWidget):
 		#TODO: Når nye checkboxes kommer må ifene bli endret på.
 		if self.name == "s_ecg":
 			self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-			self._plotQRS(self.x_start, self.x_end)
+			#self._plotQRS()
 			self._setAnnotations(x_start=self.x_start, x_end=self.x_end)
 		elif self.name == "s_vent":
 			if True:
 				self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-				self._plotVent(self.x_start, self.x_end)
+				#self._plotVent()
 			if False:
 				self.plot(self.time, self.case["data"]["s_imp"][self.x_start:self.x_end], pen=self.pen)
 		elif self.name == "s_CO2":
 			self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-			self._plotCOPoints(self.x_start, self.x_end)
+			#self._plotCOPoints(self.x_start, self.x_end)
 		else:
 			self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 		self.updateAxis()	
@@ -202,8 +204,11 @@ class GraphWidget(pg.PlotWidget):
 		axis = self.getAxis("bottom")
 		axis.setTicks(ticks)
 
-	def _plotQRS(self, x_start, x_end):
-		#print("Plotting QRS")
+	def _plotQRS(self):
+		print("Plotting QRS")
+		self.clear()
+		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+		self._setAnnotations(x_start=self.x_start, x_end=self.x_end)
 		t_qrs = self.case["metadata"]["t_qrs"]
 		s_ecg = self.case["data"]["s_ecg"]
 		
@@ -225,10 +230,10 @@ class GraphWidget(pg.PlotWidget):
 			x1 = int(np.round(entry[2]*self.frequency) + 1)
 			xPoint = int(np.round(entry[1]*self.frequency))
 		#Hvis Entry ender i vårt område eller starter i vårt område
-			if x1 >= x_start and x0 <= x_end:
+			if x1 >= self.x_start and x0 <= self.x_end:
 				mySlice = pg.ROI((x0, -10), (x1 - x0, 20), pen=(0, 200, 200))
 				self.addItem(mySlice)
-			if xPoint >= x_start and xPoint <= x_end:
+			if xPoint >= self.x_start and xPoint <= self.x_end:
 				myCircle = pg.CircleROI((xPoint - sizeX*.5, s_ecg[xPoint] - sizeY*.5), (sizeX, sizeY), pen=(150, 150, 0))
 				self.addItem(myCircle)
 	# def _plotCO2(self):
@@ -236,7 +241,7 @@ class GraphWidget(pg.PlotWidget):
 	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
 	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 
-	def _plotVent(self, x_start, x_end):
+	def _plotVent(self):
 		t_vent = self.case["metadata"]["t_vent"]
 		s_vent = self.case["data"]["s_vent"]
 		
@@ -249,16 +254,16 @@ class GraphWidget(pg.PlotWidget):
 			x1 = int(np.round(entry[2]*self.frequency) + 1)
 			xPoint = int(np.round(entry[1]*self.frequency))
 		#Hvis Entry ender i vårt område eller starter i vårt område
-			if x1 >= x_start and x0 <= x_end:
+			if x1 >= self.x_start and x0 <= self.x_end:
 				mySlice = pg.ROI((x0, -10), (x1 - x0, 20), pen=(0, 200, 200))
 				self.addItem(mySlice)
-			if xPoint >= x_start and xPoint <= x_end:
+			if xPoint >= self.x_start and xPoint <= self.x_end:
 				myCircle = pg.CircleROI((xPoint - sizeX*0.5, s_vent[xPoint] - sizeY*.5), (sizeX, sizeY), pen=(150, 150, 0))
 				self.addItem(myCircle)
 
 	#TODO: Seb Her blir det tidsforskyvninger. Dette må implementeres bedre når vi får
 	#på plass bokser for BCG/CO2 forskyvning osv.
-	def _plotCOPoints(self, x_start, x_end):
+	def _plotCOPoints(self):
 		#print("Plotting COPoints")
 		t_cap = self.case["metadata"]["t_cap"]
 		t_CO2 = self.case["metadata"]["t_CO2"] #Tidsforskyvning
@@ -273,10 +278,10 @@ class GraphWidget(pg.PlotWidget):
 			#t_min.append(item[0] + t_CO2)
 			nMax = int(round(item[1]*self.frequency) + 1)
 			#t_max.append(item[1] + t_CO2)
-			if nMin <= x_end and nMin >= x_start:
+			if nMin <= self.x_end and nMin >= self.x_start:
 				myCircle = pg.CircleROI((nMin - sizeX*.5, s_CO2[nMin] - sizeY*.5), (sizeX, sizeY), pen=(255, 0, 0))
 				self.addItem(myCircle)
-			if nMax <= x_end and nMax >= x_start:
+			if nMax <= self.x_end and nMax >= self.x_start:
 				myCircle = pg.CircleROI((nMax - sizeX*.5, s_CO2[nMax] - sizeY*.5), (sizeX, sizeY), pen=(0, 255, 0))
 				self.addItem(myCircle)
 		#TODO plott inn min og maks punkter på graf.

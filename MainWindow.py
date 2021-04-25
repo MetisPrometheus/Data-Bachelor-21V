@@ -9,12 +9,17 @@ from PyQt5 import QtCore as qtc
 #Local Classes
 from MW_Controls import MW_Controls
 from MW_GraphCollection import MW_GraphCollection
+from GraphWidget import GraphWidget
 
 class MainWindow(qtw.QWidget):
 
 	graph_toggle = qtc.pyqtSignal(str, bool)
 	slider_incs_submitted = qtc.pyqtSignal(int)
 	span_submitted = qtc.pyqtSignal(int)
+	qrs_submitted = qtc.pyqtSignal()
+	vent_wf_submitted = qtc.pyqtSignal()
+	co2_annot_submitted = qtc.pyqtSignal()
+	termination_submitted = qtc.pyqtSignal()
 
 	def __init__(self):
 		super().__init__()
@@ -36,15 +41,15 @@ class MainWindow(qtw.QWidget):
 		self.graph_layout = qtw.QVBoxLayout()
 		self.left_bar_layout = qtw.QVBoxLayout()
 		
-		self.checkboxes1 = qtw.QCheckBox("QRS")
-		self.checkboxes2 = qtw.QCheckBox("VENT WF")
-		self.checkboxes3 = qtw.QCheckBox("CO2 ANNOT")
-		self.checkboxes4 = qtw.QCheckBox("TERMINATION")
+		self.checkbox1 = qtw.QCheckBox("QRS", clicked=self.qrs_submitted.emit)
+		self.checkbox2 = qtw.QCheckBox("VENT WF", clicked=self.vent_wf_submitted.emit)
+		self.checkbox3 = qtw.QCheckBox("CO2 ANNOT", clicked=self.co2_annot_submitted.emit)
+		self.checkbox4 = qtw.QCheckBox("TERMINATION", clicked=self.termination_submitted.emit)
 
-		self.left_bar_layout.addWidget(self.checkboxes1)
-		self.left_bar_layout.addWidget(self.checkboxes2)
-		self.left_bar_layout.addWidget(self.checkboxes3)
-		self.left_bar_layout.addWidget(self.checkboxes4)
+		self.left_bar_layout.addWidget(self.checkbox1)
+		self.left_bar_layout.addWidget(self.checkbox2)
+		self.left_bar_layout.addWidget(self.checkbox3)
+		self.left_bar_layout.addWidget(self.checkbox4)
 		
 		self.main_layout.addLayout(self.left_bar_layout)
 		self.main_layout.addLayout(self.graph_layout)
@@ -71,4 +76,3 @@ class MainWindow(qtw.QWidget):
 		print("||| Main Window (GUI) Closed |||")
 		self.MW_Controls.saveCheckboxStates()
 		self.MW_GraphCollection.saveDockState()
-		

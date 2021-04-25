@@ -13,7 +13,7 @@ from MainWindow import MainWindow
 from InitialWindow import InitialWindow
 from DataController import DataController
 from TimelineSettings import TimelineSettings
-
+from GraphWidget import GraphWidget
 
 class MainApp(qtw.QApplication):
 	#Main Application Object
@@ -34,6 +34,7 @@ class MainApp(qtw.QApplication):
 		#create datacontroller object to return case data upon request
 		self.data_controller = DataController()
 
+		self.graph_widget = GraphWidget("s_ecg")
 
 		# -------- Signals & Slots --------
 		#Receive filepath from initial window and send it to the datacontroller
@@ -52,6 +53,10 @@ class MainApp(qtw.QApplication):
 		#When the application is closed, save the checkstates of the checkboxes in settings.txt
 		self.main_window.MW_Controls.checkbox_dict.connect(self.data_controller.saveCheckboxStates)
 
+		self.main_window.qrs_submitted.connect(self.main_window.MW_GraphCollection.Plot_QRS)
+		self.main_window.vent_wf_submitted.connect(self.main_window.MW_GraphCollection.Plot_VENT)
+		self.main_window.co2_annot_submitted.connect(self.main_window.MW_GraphCollection.Plot_CO2_POINTS)
+		
 
 
 		#Timeline stuff
