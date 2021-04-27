@@ -10,8 +10,6 @@ import pyqtgraph as pg
 from PyQt5 import QtCore as qtc
 
 class GraphWidget(pg.PlotWidget):
-	test_submitted = qtc.pyqtSignal(bool)
-
 	name = None
 	values = None
 	frequency = 250
@@ -25,6 +23,23 @@ class GraphWidget(pg.PlotWidget):
 	time = None
 	x_start = None
 	x_end = None
+	myCircle = None
+	qrs_submitted = False
+	vent_submitted = False
+	co2_submitted = False
+
+	LPcodes_translations = {
+			'Generic': 'Normal respiration',
+			'Oxygen': 'Hyperventlation',
+			'IV Access': 'Hold breath',
+			'Nitroglycerin': 'Tredelenburg',
+			'Morphine': 'Transport to ambulance',
+			'Intubation': 'Transport in ambulance',
+			'CPR': 'Transport from ambulance',
+			'Epinephrine': 'IV fluid (500ml)',
+			'Atropine': 'IV fluid stop',
+			'Lidocaine': 'Observation'
+	}
 
 	def __init__(self, name, useOpenGL=True):
 		super().__init__()
@@ -40,6 +55,8 @@ class GraphWidget(pg.PlotWidget):
 		self.setBackground('w')
 		#pg.setConfigOption("background", "w")
 		pg.setConfigOption("foreground", "k")
+		if self.qrs_submitted:
+			print("qrs has been submitted")
 
 	#Event triggered when a plotwidget is focused and a key is pressed
 	# def keyPressEvent(self, ev):
@@ -145,21 +162,23 @@ class GraphWidget(pg.PlotWidget):
 	def plotSection(self, slider_value=0):
 		#TODO: Egen funksjon med percentiles og slikt i matlab.
 		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-
+		self.clear()
 		#TODO: Når nye checkboxes kommer må ifene bli endret på.
 		if self.name == "s_ecg":
 			self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-			#self._plotQRS()
-			self._setAnnotations(x_start=self.x_start, x_end=self.x_end)
+			self._setAnnotations()
+			if self.qrs_submitted:
+				self._plotQRS()
 		elif self.name == "s_vent":
-			if True:
+			if self.vent_submitted:
+				self._plotVent()
 				self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-				#self._plotVent()
-			if False:
+			else:
 				self.plot(self.time, self.case["data"]["s_imp"][self.x_start:self.x_end], pen=self.pen)
 		elif self.name == "s_CO2":
+			if self.co2_submitted:
+				self._plotCOPoints()
 			self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-			#self._plotCOPoints(self.x_start, self.x_end)
 		else:
 			self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 		self.updateAxis()	
@@ -205,10 +224,6 @@ class GraphWidget(pg.PlotWidget):
 		axis.setTicks(ticks)
 
 	def _plotQRS(self):
-		print("Plotting QRS")
-		self.clear()
-		self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-		self._setAnnotations(x_start=self.x_start, x_end=self.x_end)
 		t_qrs = self.case["metadata"]["t_qrs"]
 		s_ecg = self.case["data"]["s_ecg"]
 		
@@ -264,7 +279,6 @@ class GraphWidget(pg.PlotWidget):
 	#TODO: Seb Her blir det tidsforskyvninger. Dette må implementeres bedre når vi får
 	#på plass bokser for BCG/CO2 forskyvning osv.
 	def _plotCOPoints(self):
-		#print("Plotting COPoints")
 		t_cap = self.case["metadata"]["t_cap"]
 		t_CO2 = self.case["metadata"]["t_CO2"] #Tidsforskyvning
 		s_CO2 = self.case["data"]["s_CO2"]
@@ -279,24 +293,48 @@ class GraphWidget(pg.PlotWidget):
 			nMax = int(round(item[1]*self.frequency) + 1)
 			#t_max.append(item[1] + t_CO2)
 			if nMin <= self.x_end and nMin >= self.x_start:
-				myCircle = pg.CircleROI((nMin - sizeX*.5, s_CO2[nMin] - sizeY*.5), (sizeX, sizeY), pen=(255, 0, 0))
-				self.addItem(myCircle)
+				self.myCircle = pg.CircleROI((nMin - sizeX*.5, s_CO2[nMin] - sizeY*.5), (sizeX, sizeY), pen=(255, 0, 0))
+				self.addItem(self.myCircle)
 			if nMax <= self.x_end and nMax >= self.x_start:
-				myCircle = pg.CircleROI((nMax - sizeX*.5, s_CO2[nMax] - sizeY*.5), (sizeX, sizeY), pen=(0, 255, 0))
-				self.addItem(myCircle)
+				self.myCircle = pg.CircleROI((nMax - sizeX*.5, s_CO2[nMax] - sizeY*.5), (sizeX, sizeY), pen=(0, 255, 0))
+				self.addItem(self.myCircle)
 		#TODO plott inn min og maks punkter på graf.
 		#graphDot(x=t_min, y=s_CO2(n_min))
 		#graphDot(x=t_max, y=s_CO2(n_max))
 
-	def _setAnnotations(self, x_start, x_end):
+	def _setAnnotations(self):
 		anns = self.case["metadata"]["ann"]
 		t_anns = self.case["metadata"]["t_ann"]
 		if len(anns) == len(t_anns):
 			for i in range(len(t_anns)):
-				if t_anns[i]*self.frequency >= x_start and t_anns[i]*self.frequency <= x_end:
-					if i == 0 or i == (len(t_anns)-1): # Make a different marking for the first and last item.
+				if t_anns[i]*self.frequency >= self.x_start and t_anns[i]*self.frequency <= self.x_end:
+					if i == 0:
 						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=anns[i], pen=pg.mkPen('g', width=2), labelOpts={'color': 'w', 'position': 0.7, 'fill': 'g'}))
+					elif i == (len(t_anns)-1):
+						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=anns[i], pen=pg.mkPen('r', width=2), labelOpts={'color': 'w', 'position': 0.7, 'fill': 'r'}))
 					else:
-						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=anns[i], pen=pg.mkPen('b', width=2), labelOpts={'color': 'w', 'position': 0.7, 'fill': 'b'})) # Muliplying time by frequency just so it matches our time vector. TODO: Divide all time vectors by the frequency
+						if anns[i] in self.LPcodes_translations:
+							label = self.LPcodes_translations[anns[i]]
+						else:
+							label = anns[i]
+						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=label, pen=pg.mkPen('b', width=2), labelOpts={'color': 'w', 'position': 0.7, 'fill': 'b'}))
 		else:
 			print("Something went wrong. (The vectors anns and t_anns are not the same length)")
+
+	def _submitQRS(self):
+		self.qrs_submitted = True
+
+	def _unsubmitQRS(self):
+		self.qrs_submitted = False
+
+	def _submitVENT(self):
+		self.vent_submitted = True
+
+	def _unsubmitVENT(self):
+		self.vent_submitted = False
+
+	def _submitCO2(self):
+		self.co2_submitted = True
+
+	def _unsubmitCO2(self):
+		self.co2_submitted = False

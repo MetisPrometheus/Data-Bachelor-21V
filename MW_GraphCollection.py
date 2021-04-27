@@ -150,6 +150,7 @@ class MW_GraphCollection(qtw.QWidget):
 				self.graphs[signal].setMouseEnabled(x=True, y=False)
 				self.docks[signal].addWidget(self.graphs[signal])
 
+		
 		#Loop through plotwidgets and fill with new case data
 		for signal, graphObj in self.graphs.items():
 			graphObj.setStartTime(date, time)
@@ -205,11 +206,20 @@ class MW_GraphCollection(qtw.QWidget):
 		for key, value in case["data"].items():
 			case["data"][key] = np.where(value == np.inf, np.nan, value)
 
-	def Plot_QRS(self):
-		self.graphs["s_ecg"]._plotQRS()
-
-	def Plot_VENT(self):
-		self.graphs["s_vent"]._plotVent()
-
-	def Plot_CO2_POINTS(self):
-		self.graphs["s_CO2"]._plotCOPoints()
+	def toggleOverlay(self, state, data):
+		if data == "s_ecg":
+			if state:
+				self.graphs["s_ecg"]._submitQRS()
+			else: 
+				self.graphs["s_ecg"]._unsubmitQRS()
+		if data == "s_vent":
+			if state:
+				self.graphs["s_vent"]._submitVENT()
+			else: 
+				self.graphs["s_vent"]._unsubmitVENT()
+		if data == "s_CO2":
+			if state:
+				self.graphs["s_CO2"]._submitCO2()
+			else: 
+				self.graphs["s_CO2"]._unsubmitCO2()
+		self.graphs[data].plotSection()
