@@ -4,12 +4,17 @@ import numpy as np
 
 #Own libraries
 from Utility import Utility
+from PointROI import PointROI
 
 #3rd Party Libraries
 import pyqtgraph as pg
 from PyQt5 import QtCore as qtc
 
 class GraphWidget(pg.PlotWidget):
+	#Slots
+	replot = qtc.pyqtSignal()
+
+	#Class variables
 	name = None
 	values = None
 	frequency = 250
@@ -240,21 +245,30 @@ class GraphWidget(pg.PlotWidget):
 		sizeX = xyRatios["ratioX"]/np.log10(xyRatios["diff"])
 		sizeY = xyRatios["ratioY"]/np.log10(xyRatios["diff"])
 
-		for entry in t_qrs:
-			x0 = int(np.round(entry[0]*self.frequency) + 1)
-			x1 = int(np.round(entry[2]*self.frequency) + 1)
-			xPoint = int(np.round(entry[1]*self.frequency))
+		for i in range(len(t_qrs)):
+			x0 = int(np.round(t_qrs[i][0]*self.frequency) )
+			x1 = int(np.round(t_qrs[i][2]*self.frequency) )
+			xPoint = int(np.round(t_qrs[i][1]*self.frequency) )
 		#Hvis Entry ender i vårt område eller starter i vårt område
 			if x1 >= self.x_start and x0 <= self.x_end:
 				mySlice = pg.ROI((x0, -10), (x1 - x0, 20), pen=(0, 200, 200))
 				self.addItem(mySlice)
 			if xPoint >= self.x_start and xPoint <= self.x_end:
-				myCircle = pg.CircleROI((xPoint - sizeX*.5, s_ecg[xPoint] - sizeY*.5), (sizeX, sizeY), pen=(150, 150, 0))
+				myCircle = PointROI(
+					t_qrs, i, self.getViewBox().state["viewRange"],
+					(xPoint - sizeX*.5, s_ecg[xPoint] - sizeY*.5), (sizeX, sizeY),
+					)
 				self.addItem(myCircle)
+				myCircle.sigRegionChangeFinished.connect(lambda x, y, z: self._ROImoved(x, y, z, "t_qrs", 1))
+
 	# def _plotCO2(self):
 	# 	#TODO:YLim må settes for hvert plott.
 	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
 	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+	@qtc.pyqtSlot(int, float, float, str, int)
+	def _ROImoved(self, index, pos, size, signal, value):
+		print("Moving circle")
+		self.case["metadata"][signal][index][value] = (pos + size)/250
 
 	def _plotVent(self):
 		t_vent = self.case["metadata"]["t_vent"]

@@ -17,18 +17,19 @@ from AnnotationsWidget import AnnotationsWidget
 
 # class MW_GraphCollection(qtw.QMainWindow):
 class MW_GraphCollection(qtw.QWidget):
-
+	#Signals
 	new_case_index = qtc.pyqtSignal(int)
 	slider_incs_submitted = qtc.pyqtSignal(int)
 	span_submitted = qtc.pyqtSignal(int)
-
+	
+	#Class Variables
 	span = 60
 	data_length = None
 	settings = {}
 
 	def __init__(self):
 		super().__init__()
-
+		
 		#MIDDLE PART OF GUI (Various Graphs)
 		self.dock_area = DockArea()
 		self.docks = {}
@@ -101,7 +102,7 @@ class MW_GraphCollection(qtw.QWidget):
 		
 	def eventFilter(self, o, e):
 		if e.type() == 3: #3 = MouseRelease
-			# print(self)
+			print("Mouse released and MW_GraphCollection.py eventFilter() running")
 			x_range = self.graphs["s_ecg"].viewRange()[0]
 			window_length = math.floor(x_range[1] - x_range[0])
 			increments = self.computeIncrements(window_length)
