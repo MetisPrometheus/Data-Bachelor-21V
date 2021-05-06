@@ -2,6 +2,11 @@
 import os
 import time
 import json
+try:
+	import cPickle as pickle
+except ImportError:
+	import pickle
+
 import sys
 from time import time
 
@@ -61,8 +66,8 @@ class DataController(qtw.QWidget):
 
 	DATASET_FILEPATH = None
 	ANNOTATIONS_FILEPATH = None
-	SUBSET_LP15 = "/1 LP15/MAT/"
-	SUBSET_BCG = "/2 BCG/MAT/"
+	SUBSET_LP15 = "/1 LP15/"
+	SUBSET_BCG = "/2 BCG/"
 	SUBSET_ANNOTATIONS = "/1 GUI data/"
 	CASE_NAMES = None
 	#Load the metadata.mat file into memory, since it contains all the cases.
@@ -85,18 +90,30 @@ class DataController(qtw.QWidget):
 		self.settings = saved_settings
 		self.DATASET_FILEPATH = self.settings["dataset"]
 		self.ANNOTATIONS_FILEPATH = self.settings["annotations"]
+
 		ts = time()
-		annotations = loadmat(self.ANNOTATIONS_FILEPATH + self.SUBSET_ANNOTATIONS + "metadata.mat").get("metadata")
-		print("Loading metadata.mat file took " + str(time() - ts) + " seconds.")
+		try:
+			with open(self.ANNOTATIONS_FILEPATH + self.SUBSET_ANNOTATIONS + "metadata.p", "rb") as fp:
+				self.annotationsDataset = pickle.load(fp)
+				print("Loaded annotations from pickle.")
+		except IOError:
+			annotations = loadmat(self.ANNOTATIONS_FILEPATH + self.SUBSET_ANNOTATIONS + "metadata.mat").get("metadata")
+			for i in range(len(annotations) - 1):
+				key = annotations["reg_name"][i]
+				newDict = dict()
+				for k in annotations:
+					if k == "reg_name":
+						continue
+					newDict.update({k: annotations[k][i]})
+				self.annotationsDataset.update({key: newDict})
+				self._prepDataset(self.annotationsDataset[key])
+			with open(self.ANNOTATIONS_FILEPATH + self.SUBSET_ANNOTATIONS + "metadata.p", "wb") as fp:
+				pickle.dump(self.annotationsDataset, fp, protocol=pickle.HIGHEST_PROTOCOL)
+			print("Loaded annotations from .mat and saved pickle file.")
+		print("Loading metadata took " + str(time() - ts) + " seconds.")
+
 		#Assigning correct variables to each case from metadata.mat
-		for i in range(len(annotations) - 1):
-			key = annotations["reg_name"][i]
-			newDict = dict()
-			for k in annotations:
-				if k == "reg_name":
-					continue
-				newDict.update({k: annotations[k][i]})
-			self.annotationsDataset.update({key: newDict})
+		
 		
 		#Make a list of case names from the metadata file and sort them for indexing.
 		self.CASE_NAMES = list(self.annotationsDataset.keys())
@@ -135,18 +152,45 @@ class DataController(qtw.QWidget):
 	def getCase(self, new_case_index=False):
 		case = dict()
 		caseName = self.getCaseNames()[new_case_index]
+		if not os.path.isdir(self.DATASET_FILEPATH + self.SUBSET_LP15 + "Pickle"):
+			os.mkdir(self.DATASET_FILEPATH + self.SUBSET_LP15 + "Pickle")
+		if not os.path.isdir(self.DATASET_FILEPATH + self.SUBSET_BCG + "Pickle"):
+			os.mkdir(self.DATASET_FILEPATH + self.SUBSET_BCG + "Pickle")
+
+		#LP15
 		ts = time()
-		datasetLP15 = loadmat(self.DATASET_FILEPATH + self.SUBSET_LP15 + caseName + ".mat").get("rec")
+		try:
+			with open(self.DATASET_FILEPATH + self.SUBSET_LP15 + "Pickle/" + caseName + ".p", "rb") as fp:
+				datasetLP15 = pickle.load(fp)
+				print("LP15 loaded with pickle.")
+		except IOError:
+			datasetLP15 = loadmat(self.DATASET_FILEPATH + self.SUBSET_LP15 + "MAT/" + caseName + ".mat").get("rec")
+			self._prepDataset(datasetLP15)
+			with open(self.DATASET_FILEPATH + self.SUBSET_LP15 + "Pickle/" + caseName + ".p", "wb") as fp:
+				pickle.dump(datasetLP15, fp, protocol=pickle.HIGHEST_PROTOCOL)
+			print("Loaded LP15 from .mat file and converted to pickle.")
 		print("Loading LP15 case file took " + str(time() - ts) + " seconds.")
+
+		#BCG
 		ts = time()
-		datasetBCG = loadmat(self.DATASET_FILEPATH + self.SUBSET_BCG + caseName + ".mat").get("rec")
+		try:
+			with open(self.DATASET_FILEPATH + self.SUBSET_BCG + "Pickle/" + caseName + ".p", "rb") as fp:
+				datasetBCG = pickle.load(fp)
+				print("BCG loaded with pickle.")
+		except IOError:
+			datasetBCG = loadmat(self.DATASET_FILEPATH + self.SUBSET_BCG + "MAT/" + caseName + ".mat").get("rec")
+			self._prepDataset(datasetBCG)
+			with open(self.DATASET_FILEPATH + self.SUBSET_BCG + "Pickle/" + caseName + ".p", "wb") as fp:
+				pickle.dump(datasetBCG, fp, protocol=pickle.HIGHEST_PROTOCOL)
+			print("Loaded BCG from .mat file and converted to pickle.")
 		print("Loading BCG case file took " + str(time() - ts) + " seconds.")
 		ts = time()
 		datasetAnnotations = self.annotationsDataset[caseName]
 
-		self._prepDataset(datasetLP15)
-		self._prepDataset(datasetBCG)
-		self._prepDataset(datasetAnnotations)
+		#Alt dette gjøres tidligere nå.
+		#self._prepDataset(datasetLP15)
+		#self._prepDataset(datasetBCG)
+		#self._prepDataset(datasetAnnotations)
 
 		case["data"] = datasetLP15
 		case["data"].update(datasetBCG)

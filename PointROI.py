@@ -16,7 +16,10 @@ class PointROI(pg.EllipseROI):
     ============== =============================================================
     
     """
+    #Override signals
     sigRegionChangeFinished = qtc.pyqtSignal(int, float, float)
+    sigHoverEvent = qtc.pyqtSignal(bool)
+    sigRemoveRequested = qtc.Signal(int)
 
     caseArray = None
     index = None
@@ -29,7 +32,7 @@ class PointROI(pg.EllipseROI):
             size = (radius*2, radius*2)
         self.caseArray = caseArray
         self.index = index
-        pg.EllipseROI.__init__(self, pos, size, resizable=False, pen=(0, 255, 0), **args)
+        pg.EllipseROI.__init__(self, pos, size, resizable=False, pen=(0, 255, 0), removable=True, **args)
         self.aspectLocked = True
         self.maxBounds = {}
         self.maxBounds["left"] = viewRange[0][0] if viewRange[0][0] > int(np.round(caseArray[index][0]*250) ) else int(np.round(caseArray[index][0]*250))
@@ -37,6 +40,7 @@ class PointROI(pg.EllipseROI):
         self.maxBounds["bottom"] = viewRange[1][0]
         self.maxBounds["top"] = viewRange[1][1]
     
+    #Override methods
     def _addHandles(self):
         pass
 
@@ -92,3 +96,28 @@ class PointROI(pg.EllipseROI):
 
     def stateChangeFinished(self):
         self.sigRegionChangeFinished.emit(self.index, self.getState()["pos"].x(), self.getState()["size"].x())
+
+    def hoverEvent(self, ev):
+        hover = False
+        if not ev.isExit():
+            if self.translatable and ev.acceptDrags(qtc.Qt.LeftButton):
+                hover=True
+                
+            for btn in [qtc.Qt.LeftButton, qtc.Qt.RightButton, qtc.Qt.MiddleButton]:
+                if (self.acceptedMouseButtons() & btn) and ev.acceptClicks(btn):
+                    hover=True
+            if self.contextMenuEnabled():
+                ev.acceptClicks(qtc.Qt.RightButton)
+                
+        if hover:
+            self.setMouseHover(True)
+            ev.acceptClicks(qtc.Qt.LeftButton)  ## If the ROI is hilighted, we should accept all clicks to avoid confusion.
+            ev.acceptClicks(qtc.Qt.RightButton)
+            ev.acceptClicks(qtc.Qt.MiddleButton)
+            self.sigHoverEvent.emit(True)
+        else:
+            self.setMouseHover(False)
+            self.sigHoverEvent.emit(False)
+
+    def _emitRemoveRequest(self):
+        self.sigRemoveRequested.emit(self.index)

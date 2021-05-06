@@ -26,6 +26,7 @@ class MW_GraphCollection(qtw.QWidget):
 	span = 60
 	data_length = None
 	settings = {}
+	stopPlot = False
 
 	def __init__(self):
 		super().__init__()
@@ -101,30 +102,32 @@ class MW_GraphCollection(qtw.QWidget):
 		return total_increments
 		
 	def eventFilter(self, o, e):
-		if e.type() == 3: #3 = MouseRelease
-			print("Mouse released and MW_GraphCollection.py eventFilter() running")
-			x_range = self.graphs["s_ecg"].viewRange()[0]
-			window_length = math.floor(x_range[1] - x_range[0])
-			increments = self.computeIncrements(window_length)
-			print(window_length)
+		if not self.stopPlot:
+			if e.type() == 3: #3 = MouseRelease
+				print("Mouse released and MW_GraphCollection.py eventFilter() running")
+				x_range = self.graphs["s_ecg"].viewRange()[0]
+				window_length = math.floor(x_range[1] - x_range[0])
+				increments = self.computeIncrements(window_length)
+				print(window_length)
 
-			#Loop through plotwidgets and fill with new case data
-			for signal, graphObj in self.graphs.items():
-				graphObj.computeIncrements(window_length)
-				if x_range[0] < 0:
-					x_range[0] = 0
-				graphObj.plotPosition(math.floor(x_range[0]))
+				#Loop through plotwidgets and fill with new case data
+				for signal, graphObj in self.graphs.items():
+					graphObj.computeIncrements(window_length)
+					if x_range[0] < 0:
+						x_range[0] = 0
+					graphObj.plotPosition(math.floor(x_range[0]))
 
-			#Set slider to nearest tick from the current position
-			inc_step = window_length/5
-			nearest_inc = math.floor(x_range[0]/inc_step)
-			self.slider.blockSignals(True)
-			self.slider.setValue(nearest_inc)
-			self.slider.blockSignals(False)
-		elif e.type() == 82: #82 = Zoom release but event 3 always run before 82
-			print("zoom done")
-			for signal, graphObj in self.graphs.items():
-				graphObj.updateAxis()
+				#Set slider to nearest tick from the current position
+				inc_step = window_length/5
+				nearest_inc = math.floor(x_range[0]/inc_step)
+				self.slider.blockSignals(True)
+				self.slider.setValue(nearest_inc)
+				self.slider.blockSignals(False)
+			elif e.type() == 82: #82 = Zoom release but event 3 always run before 82
+				print("zoom done")
+				for signal, graphObj in self.graphs.items():
+					graphObj.updateAxis()
+			return False
 		return False
 
 	def plotGraphs(self, case):
@@ -146,6 +149,7 @@ class MW_GraphCollection(qtw.QWidget):
 				self.dock_area.addDock(self.docks[signal], "bottom")
 				#Make a graph for every signal and assign them to their own docks
 				self.graphs[signal] = GraphWidget(signal)
+				self.graphs[signal].stopPlotting.connect(self.blockPlotting)
 				self.graphs[signal].viewport().installEventFilter(self)
 				self.graphs[signal].getAxis("left").setWidth(w=25)
 				self.graphs[signal].setMouseEnabled(x=True, y=False)
@@ -224,3 +228,7 @@ class MW_GraphCollection(qtw.QWidget):
 			else: 
 				self.graphs["s_CO2"]._unsubmitCO2()
 		self.graphs[data].plotSection()
+	
+	@qtc.pyqtSlot(bool)
+	def blockPlotting(self, toBlock):
+		self.stopPlot = toBlock

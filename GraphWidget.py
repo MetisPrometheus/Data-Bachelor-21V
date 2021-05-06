@@ -12,7 +12,7 @@ from PyQt5 import QtCore as qtc
 
 class GraphWidget(pg.PlotWidget):
 	#Slots
-	replot = qtc.pyqtSignal()
+	stopPlotting = qtc.pyqtSignal(bool)
 
 	#Class variables
 	name = None
@@ -246,30 +246,30 @@ class GraphWidget(pg.PlotWidget):
 		sizeY = xyRatios["ratioY"]/np.log10(xyRatios["diff"])
 
 		for i in range(len(t_qrs)):
-			x0 = int(np.round(t_qrs[i][0]*self.frequency) )
-			x1 = int(np.round(t_qrs[i][2]*self.frequency) )
-			xPoint = int(np.round(t_qrs[i][1]*self.frequency) )
+			x0 = t_qrs[i][0]*self.frequency #Her trengs ikke int(np.round())
+			x1 = t_qrs[i][2]*self.frequency
+			xPoint = t_qrs[i][1]*self.frequency
+			xPointIndeks = int(np.round(t_qrs[i][1]*self.frequency))
 		#Hvis Entry ender i vårt område eller starter i vårt område
 			if x1 >= self.x_start and x0 <= self.x_end:
-				mySlice = pg.ROI((x0, -10), (x1 - x0, 20), pen=(0, 200, 200))
+				mySlice = pg.LineROI(pg.Point(x0, 0), pg.Point(x1, 0), (x1-x0)*0.5, pen=(0, 200, 200))
 				self.addItem(mySlice)
 			if xPoint >= self.x_start and xPoint <= self.x_end:
 				myCircle = PointROI(
 					t_qrs, i, self.getViewBox().state["viewRange"],
-					(xPoint - sizeX*.5, s_ecg[xPoint] - sizeY*.5), (sizeX, sizeY),
+					(xPoint - sizeX*.5, s_ecg[xPointIndeks] - sizeY*.5), (sizeX, sizeY),
 					)
 				self.addItem(myCircle)
+				myCircle.sigRegionChangeStarted.connect(lambda: self._blockPlotting(True))
 				myCircle.sigRegionChangeFinished.connect(lambda x, y, z: self._ROImoved(x, y, z, "t_qrs", 1))
+				myCircle.sigHoverEvent.connect(self._blockPlotting)
+				myCircle.sigRemoveRequested.connect(lambda x: self._removeEntry(x, "t_qrs"))
 
 	# def _plotCO2(self):
 	# 	#TODO:YLim må settes for hvert plott.
 	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
 	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
-	@qtc.pyqtSlot(int, float, float, str, int)
-	def _ROImoved(self, index, pos, size, signal, value):
-		print("Moving circle")
-		self.case["metadata"][signal][index][value] = (pos + size)/250
-
+	
 	def _plotVent(self):
 		t_vent = self.case["metadata"]["t_vent"]
 		s_vent = self.case["data"]["s_vent"]
@@ -352,3 +352,16 @@ class GraphWidget(pg.PlotWidget):
 
 	def _unsubmitCO2(self):
 		self.co2_submitted = False
+
+	@qtc.pyqtSlot(int, float, float, str, int)
+	def _ROImoved(self, index, pos, size, signal, value):
+		self.case["metadata"][signal][index][value] = (pos + 0.5*size)/250
+		self._blockPlotting(False)
+	@qtc.pyqtSlot(bool)
+	def _blockPlotting(self, toBlock):
+		print("Emitting blocking signal.")
+		self.stopPlotting.emit(toBlock)
+	@qtc.pyqtSlot(int)
+	def _removeEntry(self, index, signal):
+		self.case["metadata"][signal] = np.delete(self.case["metadata"][signal], index, 0)
+		print("Removing from entry number " + str(index) + "from signal " + signal)
