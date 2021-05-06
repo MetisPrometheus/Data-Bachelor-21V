@@ -115,6 +115,9 @@ class GraphWidget(pg.PlotWidget):
 		zoom = True if ev.angleDelta().y() == 120 else False
 		print(zoom)
 
+	def replot(self):
+		self.plotPosition(math.floor(self.viewRange()[0][0]))
+
 	#Plotting graphs after panning/zooming
 	def plotPosition(self, viewbox_start):
 		self.clear()
