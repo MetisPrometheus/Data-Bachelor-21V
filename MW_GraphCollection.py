@@ -28,6 +28,9 @@ class MW_GraphCollection(qtw.QWidget):
 	settings = {}
 	stopPlot = False
 
+	MAX_X_RANGE = 50000
+	MIN_X_RANGE = 100
+
 	def __init__(self):
 		super().__init__()
 		
@@ -100,7 +103,43 @@ class MW_GraphCollection(qtw.QWidget):
 		total_increments += math.ceil(incomplete_section/2)
 		self.slider.setMaximum(total_increments)
 		return total_increments
-		
+
+	def wheelEvent(self, ev):
+		zoom = False if ev.angleDelta().y() == 120 else True
+
+		#Increase or decrease viewbox by 10%
+		x_range = self.graphs["s_ecg"].viewRange()[0]
+		skew = math.floor((x_range[1]-x_range[0])*0.05)
+		if zoom:
+			x_range[0] = x_range[0] - skew
+			x_range[1] = x_range[1] + skew
+		else:
+			x_range[0] = x_range[0] + skew
+			x_range[1] = x_range[1] - skew
+
+		#Exit function if new window size would exceed the preset limits
+		window_length = math.floor(x_range[1] - x_range[0])
+		if window_length >= self.MAX_X_RANGE or window_length <= self.MIN_X_RANGE:
+			return
+		self.computeIncrements(window_length) #move to e-82,31?
+
+		print(x_range[1]-x_range[0])
+		#Loop through the plotwidgets to update the graphs
+		for signal, graphObj in self.graphs.items():
+			graphObj.setXRange(x_range[0], x_range[1], 0)
+			graphObj.computeIncrements(window_length)
+			if x_range[0] < 0:
+				x_range[0] = 0
+			graphObj.plotPosition(math.floor(x_range[0]))
+			graphObj.updateAxis()
+
+		#Set slider to nearest tick from the current position
+		inc_step = window_length/5
+		nearest_inc = math.floor(x_range[0]/inc_step)
+		self.slider.blockSignals(True)
+		self.slider.setValue(nearest_inc)
+		self.slider.blockSignals(False)
+
 	def eventFilter(self, o, e):
 		if not self.stopPlot:
 			if e.type() == 3: #3 = MouseRelease

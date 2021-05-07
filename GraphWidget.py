@@ -33,6 +33,9 @@ class GraphWidget(pg.PlotWidget):
 	vent_submitted = False
 	co2_submitted = False
 
+	MAX_X_RANGE = 50000
+	MIN_X_RANGE = 100
+
 	LPcodes_translations = {
 			'Generic': 'Normal respiration',
 			'Oxygen': 'Hyperventlation',
@@ -51,7 +54,7 @@ class GraphWidget(pg.PlotWidget):
 		self.name = name
 
 		# self.setXRange(10000, 30000, 0.05)
-		self.setLimits(xMin=-500, minXRange=100, maxXRange=50000)
+		self.setLimits(xMin=-500, minXRange=self.MIN_X_RANGE, maxXRange=self.MAX_X_RANGE)
 
 		# axis = pg.DateAxisItem()
 		# self.setAxisItems({"bottom": axis})
@@ -110,10 +113,9 @@ class GraphWidget(pg.PlotWidget):
 		incomplete_section = ((data_length/self.window_length)-(complete_sections+1))*10 #[0-10]
 		self.total_increments += math.ceil(incomplete_section/2)
 
+	#Do not remove. Is needed for the wheelEvent in MW_GraphCollection to execute
 	def wheelEvent(self, ev):
-		#TODO make self.windowlength bigger or smaller then replot
-		zoom = True if ev.angleDelta().y() == 120 else False
-		print(zoom)
+		pass
 
 	def replot(self):
 		self.plotPosition(math.floor(self.viewRange()[0][0]))
