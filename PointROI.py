@@ -32,11 +32,11 @@ class PointROI(pg.EllipseROI):
             size = (radius*2, radius*2)
         self.caseArray = caseArray
         self.index = index
-        pg.EllipseROI.__init__(self, pos, size, resizable=False, pen=(0, 255, 0), removable=True, **args)
+        pg.EllipseROI.__init__(self, pos, size, resizable=False, pen=(0, 255, 0), removable=True, rotatable=False, **args)
         self.aspectLocked = True
         self.maxBounds = {}
-        self.maxBounds["left"] = viewRange[0][0] if viewRange[0][0] > int(np.round(caseArray[index][0]*250) ) else int(np.round(caseArray[index][0]*250))
-        self.maxBounds["right"] = viewRange[0][1] if viewRange[0][1] < int(np.round(caseArray[index][2]*250) ) else int(np.round(caseArray[index][2]*250))
+        self.maxBounds["left"] = viewRange[0][0] if viewRange[0][0] > caseArray[index][0]*250 else caseArray[index][0]*250
+        self.maxBounds["right"] = viewRange[0][1] if viewRange[0][1] < caseArray[index][2]*250 else caseArray[index][2]*250
         self.maxBounds["bottom"] = viewRange[1][0]
         self.maxBounds["top"] = viewRange[1][1]
     

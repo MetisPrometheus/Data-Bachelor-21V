@@ -5,6 +5,7 @@ import numpy as np
 #Own libraries
 from Utility import Utility
 from PointROI import PointROI
+from RegionROI import RegionROI
 
 #3rd Party Libraries
 import pyqtgraph as pg
@@ -257,8 +258,17 @@ class GraphWidget(pg.PlotWidget):
 			xPointIndeks = int(np.round(t_qrs[i][1]*self.frequency))
 		#Hvis Entry ender i vårt område eller starter i vårt område
 			if x1 >= self.x_start and x0 <= self.x_end:
-				mySlice = pg.LineROI(pg.Point(x0, 0), pg.Point(x1, 0), (x1-x0)*0.5, pen=(0, 200, 200))
+				mySlice = RegionROI(
+					pg.Point(x0, 0), pg.Point(x1, 0), (x1-x0), 
+					t_qrs, i, self.getViewBox().state["viewRange"],
+					pen=(0, 200, 200)
+					)
 				self.addItem(mySlice)
+				mySlice.sigRegionChangeStarted.connect(lambda: self._blockPlotting(True))
+				mySlice.sigRegionChangeFinished.connect(lambda x, y, z: self._ROImoved(x, y, z, "t_qrs", [0, 2]))
+				mySlice.sigHoverEvent.connect(self._blockPlotting)
+				mySlice.sigRemoveRequested.connect(lambda x: self._removeEntry(x, "t_qrs"))
+
 			if xPoint >= self.x_start and xPoint <= self.x_end:
 				myCircle = PointROI(
 					t_qrs, i, self.getViewBox().state["viewRange"],
@@ -360,12 +370,19 @@ class GraphWidget(pg.PlotWidget):
 
 	@qtc.pyqtSlot(int, float, float, str, int)
 	def _ROImoved(self, index, pos, size, signal, value):
-		self.case["metadata"][signal][index][value] = (pos + 0.5*size)/250
+		if Utility.isList(value):
+			self.case["metadata"][signal][index][value[0]] = pos/250  
+			self.case["metadata"][signal][index][value[1]] = (pos + size)/250
+		else:
+			self.case["metadata"][signal][index][value] = (pos + 0.5*size)/250
 		self._blockPlotting(False)
+		self.replot()
+
 	@qtc.pyqtSlot(bool)
 	def _blockPlotting(self, toBlock):
 		print("Emitting blocking signal.")
 		self.stopPlotting.emit(toBlock)
+
 	@qtc.pyqtSlot(int)
 	def _removeEntry(self, index, signal):
 		self.case["metadata"][signal] = np.delete(self.case["metadata"][signal], index, 0)
