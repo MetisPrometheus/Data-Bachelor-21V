@@ -27,26 +27,33 @@ class RegionROI(pg.ROI):
 
     caseArray = None
     index = None
-    leftDerp = None
-    rightDerp = None
+    leftBounds = None
+    rightBounds = None
+    viewRange = None
 
-
-    def __init__(self, pos1, pos2, width, caseArray, index, viewRange, **args):
+    def __init__(self, pos1, pos2, width, myPointROISizeX, caseArray, index, viewRange, **args):
         self.caseArray = caseArray
         self.index = index
-        self.leftDerp = {}
-        self.rightDerp = {}
+        self.leftBounds = {}
+        self.rightBounds = {}
+        self.viewRange = viewRange
+
         if index == 0:
-            self.leftDerp["left"] = viewRange[0][0]
+            self.leftBounds["left"] = self.viewRange[0][0]
         else:
-            self.leftDerp["left"] = viewRange[0][0] if viewRange[0][0] > caseArray[index - 1][2]*250 else caseArray[index - 1][2]*250
-        self.leftDerp["right"] = viewRange[0][1] if viewRange[0][1] < caseArray[index][1]*250 else caseArray[index][1]*250
+            self.leftBounds["left"] = self.viewRange[0][0] if self.viewRange[0][0] > caseArray[index - 1][2]*250 else caseArray[index - 1][2]*250
+        self.leftBounds["right"] = self.viewRange[0][1] if self.viewRange[0][1] < caseArray[index][1]*250 else caseArray[index][1]*250
         if index == len(caseArray) - 1:
-            self.rightDerp["right"] = viewRange[0][1]
+            self.rightBounds["right"] = self.viewRange[0][1]
         else:
-            self.rightDerp["right"] = viewRange[0][1] if viewRange[0][1] < caseArray[index + 1][0]*250 else caseArray[index + 1][0]*250
-        self.rightDerp["left"] = viewRange[0][0] if viewRange[0][0] > caseArray[index][1]*250 else caseArray[index][1]*250
+            self.rightBounds["right"] = self.viewRange[0][1] if self.viewRange[0][1] < caseArray[index + 1][0]*250 else caseArray[index + 1][0]*250
+        self.rightBounds["left"] = self.viewRange[0][0] if self.viewRange[0][0] > caseArray[index][1]*250 else caseArray[index][1]*250
         
+        self.leftBounds["left"] += myPointROISizeX
+        self.leftBounds["right"] -= myPointROISizeX
+        self.rightBounds["left"] += myPointROISizeX
+        self.rightBounds["right"] -= myPointROISizeX
+
         pos1 = pg.Point(pos1)
         pos2 = pg.Point(pos2)
         d = pos2-pos1
@@ -63,7 +70,6 @@ class RegionROI(pg.ROI):
     def movePoint(self, handle, pos, modifiers=qtc.Qt.KeyboardModifiers(0), finish=True, coords='parent'):
         ## called by Handles when they are moved. 
         ## pos is the new position of the handle in scene coords, as requested by the handle.
-        print("Change in progress")
         newState = self.stateCopy()
         index = self.indexOfHandle(handle)
         h = self.handles[index]
@@ -187,7 +193,7 @@ class RegionROI(pg.ROI):
             self.setAngle(ang, update=False)
             
             ## If this is a free-rotate handle, its distance from the center may change.
-            
+         
             if h['type'] == 'rf':
                 h['item'].setPos(self.mapFromScene(p1))  ## changes ROI coordinates of handle
                 h['pos'] = self.mapFromParent(p1)
@@ -198,9 +204,8 @@ class RegionROI(pg.ROI):
                     return
             except OverflowError:
                 return
-            #Endring
-            ang = 0.0
-            #ang = newState['angle'] - lp0.angle(lp1)
+
+            ang = 0.0 #We don't wish changes to the angle.
             if ang is None:
                 return
             if self.rotateSnap or (modifiers & qtc.Qt.ControlModifier):
@@ -227,8 +232,7 @@ class RegionROI(pg.ROI):
             
             cc = self.mapToParent(cs) - (tr.map(c1) + self.state['pos'])
             newState['angle'] = ang
-            #Denne skal helst ikke flyttes langs y-aksen, men forbli midtstilt.
-            cc.setY(0.0)
+            cc.setY(0.0)#We don't wish to move the region along the y-axis.
 
             newState['pos'] = newState['pos'] + cc
             if self.maxBounds is not None:
@@ -236,11 +240,9 @@ class RegionROI(pg.ROI):
                 if not self.maxBounds.contains(r):
                     return
             
-            
-            
-            #Posisjonene må ikke overlappe med topppunkt eller naboregioner.
+            #Posisjonene må ikke overlappe med toppunkt eller naboregioner.
             if index == 0: #Venstre handle
-                horizontalBounds = self.leftDerp
+                horizontalBounds = self.leftBounds
                 if newState["pos"].x() < horizontalBounds["left"]:
                     diff = newState["pos"].x() - horizontalBounds["left"]
                     newState["size"].setX(newState["size"].x() + diff)
@@ -250,7 +252,7 @@ class RegionROI(pg.ROI):
                     newState["size"].setX(newState["size"].x() + diff)
                     newState["pos"].setX(newState["pos"].x() - diff)  
             else:
-                horizontalBounds = self.rightDerp
+                horizontalBounds = self.rightBounds
                 if newState["pos"].x() + newState["size"].x() < horizontalBounds["left"]:
                     diff = newState["pos"].x() + newState["size"].x() - horizontalBounds["left"]
                     newState["size"].setX(newState["size"].x() - diff)
@@ -258,11 +260,9 @@ class RegionROI(pg.ROI):
                     diff = newState["pos"].x() + newState["size"].x() - horizontalBounds["right"]
                     newState["size"].setX(newState["size"].x() - diff)
 
-
             self.setState(newState, update=False)
 
         self.stateChanged(finish=finish)
-        print("Change finished")
 
     def _emitRemoveRequest(self):
         self.sigRemoveRequested.emit(self.index)
@@ -291,3 +291,6 @@ class RegionROI(pg.ROI):
         else:
             self.setMouseHover(False)
             self.sigHoverEvent.emit(False)
+
+    def translate(self, *args, **kargs):
+        pass

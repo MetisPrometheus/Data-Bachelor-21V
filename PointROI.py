@@ -32,11 +32,11 @@ class PointROI(pg.EllipseROI):
             size = (radius*2, radius*2)
         self.caseArray = caseArray
         self.index = index
-        pg.EllipseROI.__init__(self, pos, size, resizable=False, pen=(0, 255, 0), removable=True, rotatable=False, **args)
+        pg.EllipseROI.__init__(self, pos, size, resizable=False, rotatable=False, **args)
         self.aspectLocked = True
         self.maxBounds = {}
         self.maxBounds["left"] = viewRange[0][0] if viewRange[0][0] > caseArray[index][0]*250 else caseArray[index][0]*250
-        self.maxBounds["right"] = viewRange[0][1] if viewRange[0][1] < caseArray[index][2]*250 else caseArray[index][2]*250
+        self.maxBounds["right"] = viewRange[0][1] if viewRange[0][1] < caseArray[index][-1]*250 else caseArray[index][-1]*250
         self.maxBounds["bottom"] = viewRange[1][0]
         self.maxBounds["top"] = viewRange[1][1]
     
@@ -80,14 +80,16 @@ class PointROI(pg.EllipseROI):
         if self.maxBounds is not None:
             r = self.stateRect(newState)
             d = pg.Point(0,0)
-            if self.maxBounds["left"] > r.left():
-                d[0] = self.maxBounds["left"] - r.left()
-            elif self.maxBounds["right"] < r.right():
-                d[0] = self.maxBounds["right"] - r.right()
-            if self.maxBounds["top"] < r.top() - 0.5*self.getState()["size"].y():
-                d[1] = self.maxBounds["top"] - r.top() - 0.5*self.getState()["size"].y()
-            elif self.maxBounds["bottom"] > r.bottom() + 0.5*self.getState()["size"].y():
-                d[1] = self.maxBounds["bottom"] - r.bottom() + 0.5*self.getState()["size"].y()
+            offsetX = 0.5*self.getState()["size"].x()
+            offsetY = 0.5*self.getState()["size"].y()
+            if self.maxBounds["left"] > r.left() + offsetX:
+                d[0] = self.maxBounds["left"] - r.left() + offsetX
+            elif self.maxBounds["right"] < r.right() - offsetX:
+                d[0] = self.maxBounds["right"] - r.right() - offsetX
+            if self.maxBounds["top"] < r.top() - offsetY:
+                d[1] = self.maxBounds["top"] - r.top() - offsetY
+            elif self.maxBounds["bottom"] > r.bottom() + offsetY:
+                d[1] = self.maxBounds["bottom"] - r.bottom() + offsetY
             newState['pos'] += d
         
         update = kargs.get('update', True)

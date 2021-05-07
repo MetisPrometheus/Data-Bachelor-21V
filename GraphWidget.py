@@ -6,6 +6,7 @@ import numpy as np
 from Utility import Utility
 from PointROI import PointROI
 from RegionROI import RegionROI
+from PointROIMinMax import PointROIMinMax
 
 #3rd Party Libraries
 import pyqtgraph as pg
@@ -255,35 +256,12 @@ class GraphWidget(pg.PlotWidget):
 			x0 = t_qrs[i][0]*self.frequency #Her trengs ikke int(np.round())
 			x1 = t_qrs[i][2]*self.frequency
 			xPoint = t_qrs[i][1]*self.frequency
-			xPointIndeks = int(np.round(t_qrs[i][1]*self.frequency))
+			xPointIndeks = int(np.round(xPoint))
 		#Hvis Entry ender i vårt område eller starter i vårt område
 			if x1 >= self.x_start and x0 <= self.x_end:
-				mySlice = RegionROI(
-					pg.Point(x0, 0), pg.Point(x1, 0), (x1-x0), 
-					t_qrs, i, self.getViewBox().state["viewRange"],
-					pen=(0, 200, 200)
-					)
-				self.addItem(mySlice)
-				mySlice.sigRegionChangeStarted.connect(lambda: self._blockPlotting(True))
-				mySlice.sigRegionChangeFinished.connect(lambda x, y, z: self._ROImoved(x, y, z, "t_qrs", [0, 2]))
-				mySlice.sigHoverEvent.connect(self._blockPlotting)
-				mySlice.sigRemoveRequested.connect(lambda x: self._removeEntry(x, "t_qrs"))
-
+				self._addRegion(x0, x1, i, "t_qrs", sizeX)
 			if xPoint >= self.x_start and xPoint <= self.x_end:
-				myCircle = PointROI(
-					t_qrs, i, self.getViewBox().state["viewRange"],
-					(xPoint - sizeX*.5, s_ecg[xPointIndeks] - sizeY*.5), (sizeX, sizeY),
-					)
-				self.addItem(myCircle)
-				myCircle.sigRegionChangeStarted.connect(lambda: self._blockPlotting(True))
-				myCircle.sigRegionChangeFinished.connect(lambda x, y, z: self._ROImoved(x, y, z, "t_qrs", 1))
-				myCircle.sigHoverEvent.connect(self._blockPlotting)
-				myCircle.sigRemoveRequested.connect(lambda x: self._removeEntry(x, "t_qrs"))
-
-	# def _plotCO2(self):
-	# 	#TODO:YLim må settes for hvert plott.
-	# 	self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
-	# 	self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
+				self._addPoint("s_ecg", "t_qrs", i, xPoint, sizeX, xPointIndeks, sizeY, False, (0, 0, 128))
 	
 	def _plotVent(self):
 		t_vent = self.case["metadata"]["t_vent"]
@@ -293,17 +271,16 @@ class GraphWidget(pg.PlotWidget):
 		sizeX = xyRatios["ratioX"]/np.log10(xyRatios["diff"])
 		sizeY = xyRatios["ratioY"]/np.log10(xyRatios["diff"])
 
-		for entry in t_vent:
-			x0 = int(np.round(entry[0]*self.frequency) + 1)
-			x1 = int(np.round(entry[2]*self.frequency) + 1)
-			xPoint = int(np.round(entry[1]*self.frequency))
+		for i in range(len(t_vent)):
+			x0 = t_vent[i][0]*self.frequency #Her trengs ikke int(np.round())
+			x1 = t_vent[i][2]*self.frequency
+			xPoint = t_vent[i][1]*self.frequency
+			xPointIndeks = int(np.round(xPoint))
 		#Hvis Entry ender i vårt område eller starter i vårt område
 			if x1 >= self.x_start and x0 <= self.x_end:
-				mySlice = pg.ROI((x0, -10), (x1 - x0, 20), pen=(0, 200, 200))
-				self.addItem(mySlice)
+				self._addRegion(x0, x1, i, "t_vent", sizeX)
 			if xPoint >= self.x_start and xPoint <= self.x_end:
-				myCircle = pg.CircleROI((xPoint - sizeX*0.5, s_vent[xPoint] - sizeY*.5), (sizeX, sizeY), pen=(150, 150, 0))
-				self.addItem(myCircle)
+				self._addPoint("s_vent", "t_vent", i, xPoint, sizeX, xPointIndeks, sizeY, False, (0, 0, 128))
 
 	#TODO: Seb Her blir det tidsforskyvninger. Dette må implementeres bedre når vi får
 	#på plass bokser for BCG/CO2 forskyvning osv.
@@ -316,20 +293,17 @@ class GraphWidget(pg.PlotWidget):
 		sizeX = xyRatios["ratioX"]/np.log10(xyRatios["diff"])
 		sizeY = xyRatios["ratioY"]/np.log10(xyRatios["diff"])
 
-		for item in t_cap:
-			nMin = int(round(item[0]*self.frequency) + 1)
+		for i in range(len(t_cap)):
+			nMin = (t_cap[i][0])*self.frequency
+			nMinIndeks = int(np.round(nMin))
 			#t_min.append(item[0] + t_CO2)
-			nMax = int(round(item[1]*self.frequency) + 1)
+			nMax = (t_cap[i][1])*self.frequency
+			nMaxIndeks = int(np.round(nMax))
 			#t_max.append(item[1] + t_CO2)
 			if nMin <= self.x_end and nMin >= self.x_start:
-				self.myCircle = pg.CircleROI((nMin - sizeX*.5, s_CO2[nMin] - sizeY*.5), (sizeX, sizeY), pen=(255, 0, 0))
-				self.addItem(self.myCircle)
+				self._addPointMinMax("s_CO2", "t_cap", [i, 0], nMin, sizeX, nMinIndeks, sizeY, True, (255, 0, 0))
 			if nMax <= self.x_end and nMax >= self.x_start:
-				self.myCircle = pg.CircleROI((nMax - sizeX*.5, s_CO2[nMax] - sizeY*.5), (sizeX, sizeY), pen=(0, 255, 0))
-				self.addItem(self.myCircle)
-		#TODO plott inn min og maks punkter på graf.
-		#graphDot(x=t_min, y=s_CO2(n_min))
-		#graphDot(x=t_max, y=s_CO2(n_max))
+				self._addPointMinMax("s_CO2", "t_cap", [i, 1], nMax, sizeX, nMaxIndeks, sizeY, True, (0, 255, 0))
 
 	def _setAnnotations(self):
 		anns = self.case["metadata"]["ann"]
@@ -380,10 +354,43 @@ class GraphWidget(pg.PlotWidget):
 
 	@qtc.pyqtSlot(bool)
 	def _blockPlotting(self, toBlock):
-		print("Emitting blocking signal.")
+		#print("Emitting blocking signal." + str(toBlock))
 		self.stopPlotting.emit(toBlock)
 
 	@qtc.pyqtSlot(int)
 	def _removeEntry(self, index, signal):
 		self.case["metadata"][signal] = np.delete(self.case["metadata"][signal], index, 0)
-		print("Removing from entry number " + str(index) + "from signal " + signal)
+		self.replot()
+
+	def _addRegion(self, x0, x1, index, metaSignal, myPointROISizeX):
+		mySlice = RegionROI(
+			pg.Point(x0, 0), pg.Point(x1, 0), 2*(self.getViewBox().state["viewRange"][1][1] - self.getViewBox().state["viewRange"][1][0]), myPointROISizeX,
+			self.case["metadata"][metaSignal], index, self.getViewBox().state["viewRange"],
+			pen=(0, 200, 200)
+			)
+		self.addItem(mySlice)
+		self._connectSignals(mySlice, metaSignal, [0, 2])
+
+	def _addPoint(self, dataSignal, metaSignal, index, xPoint, sizeX, xPointIndeks, sizeY, isRemovable, penColour):
+		myCircle = PointROI(
+			self.case["metadata"][metaSignal], index, self.getViewBox().state["viewRange"],
+			(xPoint - sizeX*.5, self.case["data"][dataSignal][xPointIndeks] - sizeY*.5), (sizeX, sizeY),
+			removable=isRemovable, pen=penColour
+			)
+		self.addItem(myCircle)
+		self._connectSignals(myCircle, metaSignal, 1)
+	
+	def _addPointMinMax(self, dataSignal, metaSignal, index, xPoint, sizeX, xPointIndeks, sizeY, isRemovable, penColour):
+		myCircle = PointROIMinMax(
+			self.case["metadata"][metaSignal], index, self.getViewBox().state["viewRange"],
+			(xPoint - sizeX*.5, self.case["data"][dataSignal][xPointIndeks] - sizeY*.5), (sizeX, sizeY),
+			removable=isRemovable, pen=penColour
+			)
+		self.addItem(myCircle)
+		self._connectSignals(myCircle, metaSignal, index[1])
+
+	def _connectSignals(self, roi, metaSignal, values):
+		roi.sigRegionChangeStarted.connect(lambda: self._blockPlotting(True))
+		roi.sigRegionChangeFinished.connect(lambda x, y, z: self._ROImoved(x, y, z, metaSignal, values))
+		roi.sigHoverEvent.connect(self._blockPlotting)
+		roi.sigRemoveRequested.connect(lambda x: self._removeEntry(x, metaSignal))
