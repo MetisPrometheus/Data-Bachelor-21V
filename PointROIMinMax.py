@@ -29,7 +29,7 @@ class PointROIMinMax(PointROI):
                 self.maxBounds["left"] = viewRange[0][0] if viewRange[0][0] > self.caseArray[self.index][self.pairIndex - 1]*250 else self.caseArray[self.index][self.pairIndex - 1]*250
         #Am i the point farthest to the right?
         if self.index == len(self.caseArray) - 1 and self.pairIndex == 1:
-            self.maxBounds["right"] = self.viewRange[0][1]
+            self.maxBounds["right"] = viewRange[0][1]
         else:
             if self.pairIndex == 0:
                 self.maxBounds["right"] = viewRange[0][1] if viewRange[0][1] < self.caseArray[self.index][self.pairIndex + 1]*250 else self.caseArray[self.index][self.pairIndex + 1]*250

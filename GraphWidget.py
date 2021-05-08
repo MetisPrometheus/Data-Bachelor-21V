@@ -1,6 +1,7 @@
 #Standard Libraries
 import math
 import numpy as np
+from time import time
 
 #Own libraries
 from Utility import Utility
@@ -235,6 +236,7 @@ class GraphWidget(pg.PlotWidget):
 		axis = self.getAxis("bottom")
 		axis.setTicks(ticks)
 
+
 	def _plotQRS(self):
 		t_qrs = self.case["metadata"]["t_qrs"]
 		s_ecg = self.case["data"]["s_ecg"]
@@ -242,6 +244,9 @@ class GraphWidget(pg.PlotWidget):
 		xyRatios = Utility.getRangeRatio(self.getViewBox())
 		sizeX = xyRatios["sizeX"]
 		sizeY = xyRatios["sizeY"]
+		
+		xStart = self.getViewBox().state["viewRange"][0][0]
+		xEnd = self.getViewBox().state["viewRange"][0][1]
 
 		for i in range(len(t_qrs)):
 			x0 = t_qrs[i][0]*self.frequency #Her trengs ikke int(np.round())
@@ -249,11 +254,14 @@ class GraphWidget(pg.PlotWidget):
 			xPoint = t_qrs[i][1]*self.frequency
 			xPointIndeks = int(np.round(xPoint))
 		#Hvis Entry ender i vårt område eller starter i vårt område
-			if x1 >= self.x_start and x0 <= self.x_end:
+			if x1 >= xStart and x0 <= xEnd:
 				self._addRegion(x0, x1, i, "t_qrs", sizeX)
-			if xPoint >= self.x_start and xPoint <= self.x_end:
-				self._addPoint("s_ecg", "t_qrs", i, xPoint, sizeX, xPointIndeks, sizeY, False, (0, 0, 128))
-	
+			if xPoint >= xStart and xPoint <= xEnd:
+				self._addPoint("s_ecg", "t_qrs", i, xPoint, sizeX, xPointIndeks, sizeY, False, (64, 128, 128))
+			if x0 > xEnd:
+				break
+
+
 	def _plotVent(self):
 		t_vent = self.case["metadata"]["t_vent"]
 		s_vent = self.case["data"]["s_vent"]
@@ -262,16 +270,22 @@ class GraphWidget(pg.PlotWidget):
 		sizeX = xyRatios["sizeX"]
 		sizeY = xyRatios["sizeY"]
 
+		xStart = self.getViewBox().state["viewRange"][0][0]
+		xEnd = self.getViewBox().state["viewRange"][0][1]
+
 		for i in range(len(t_vent)):
 			x0 = t_vent[i][0]*self.frequency #Her trengs ikke int(np.round())
 			x1 = t_vent[i][2]*self.frequency
 			xPoint = t_vent[i][1]*self.frequency
 			xPointIndeks = int(np.round(xPoint))
 		#Hvis Entry ender i vårt område eller starter i vårt område
-			if x1 >= self.x_start and x0 <= self.x_end:
+			if x1 >= xStart and x0 <= xEnd:
 				self._addRegion(x0, x1, i, "t_vent", sizeX)
-			if xPoint >= self.x_start and xPoint <= self.x_end:
-				self._addPoint("s_vent", "t_vent", i, xPoint, sizeX, xPointIndeks, sizeY, False, (0, 0, 128))
+			if xPoint >= xStart and xPoint <= xEnd:
+				self._addPoint("s_vent", "t_vent", i, xPoint, sizeX, xPointIndeks, sizeY, False, (64, 128, 128))
+			if x0 > xEnd:
+				break
+
 
 	#TODO: Seb Her blir det tidsforskyvninger. Dette må implementeres bedre når vi får
 	#på plass bokser for BCG/CO2 forskyvning osv.
@@ -284,6 +298,9 @@ class GraphWidget(pg.PlotWidget):
 		sizeX = xyRatios["sizeX"]
 		sizeY = xyRatios["sizeY"]
 
+		xStart = self.getViewBox().state["viewRange"][0][0]
+		xEnd = self.getViewBox().state["viewRange"][0][1]
+
 		for i in range(len(t_cap)):
 			nMin = (t_cap[i][0])*self.frequency
 			nMinIndeks = int(np.round(nMin))
@@ -291,10 +308,13 @@ class GraphWidget(pg.PlotWidget):
 			nMax = (t_cap[i][1])*self.frequency
 			nMaxIndeks = int(np.round(nMax))
 			#t_max.append(item[1] + t_CO2)
-			if nMin <= self.x_end and nMin >= self.x_start:
+			if nMin <= xEnd and nMin >= xStart:
 				self._addPointMinMax("s_CO2", "t_cap", [i, 0], nMin, sizeX, nMinIndeks, sizeY, True, (255, 0, 0))
-			if nMax <= self.x_end and nMax >= self.x_start:
+			if nMax <= xEnd and nMax >= xStart:
 				self._addPointMinMax("s_CO2", "t_cap", [i, 1], nMax, sizeX, nMaxIndeks, sizeY, True, (0, 255, 0))
+			if nMax > xEnd:
+				break
+
 
 	def _setAnnotations(self):
 		anns = self.case["metadata"]["ann"]
