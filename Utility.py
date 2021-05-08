@@ -44,14 +44,24 @@ class Utility(object):
     def getRangeRatio(vb):
         #Sjekk hvilket spenn er minst. Del så begge spenn med dette.
         xyArray = vb.state["viewRange"]
+
+        prefPixelSize = 10
+
+        xDiff = abs(xyArray[0][1] - xyArray[0][0])
         xPixels = vb.boundingRect().width()
-        yPixels = vb.boundingRect().height()
+        xRatio = xDiff/xPixels
         
-        diffX = abs(xyArray[0][1] - xyArray[0][0])
-        diffY = abs(xyArray[1][1] - xyArray[1][0])
+        yDiff = abs(xyArray[1][1] - xyArray[1][0])
+        yPixels = vb.boundingRect().height()
+        yRatio = yDiff/yPixels
+
         #For det meste så vil Y spennet være mindre enn X, så start med dette for å spare tid.
         #Ikke sløs tid på å beregne diffY/diffY, heller.
-        if diffY < diffX:
-            return { "diff": diffX, "diffX": diffX, "diffY": diffY, "ratioX": diffX*diffY*.40/(diffY*xPixels/yPixels), "ratioY": diffY*.25 }
+        if yRatio < xRatio:
+            ySize = yRatio*prefPixelSize
+            xSize = xRatio*prefPixelSize
         else:
-            return { "diff": diffY, "diffX": diffX, "diffY": diffY, "ratioX": diffX*.40, "ratioY": (diffY/diffX)/(yPixels/xPixels) }
+            xSize = yRatio*prefPixelSize
+            ySize = xRatio*prefPixelSize
+
+        return {"sizeX": xSize/np.log10(xDiff*0.05), "sizeY": ySize/np.log10(xDiff*0.05)}

@@ -143,7 +143,7 @@ class MW_GraphCollection(qtw.QWidget):
 	def eventFilter(self, o, e):
 		if not self.stopPlot:
 			if e.type() == 3: #3 = MouseRelease
-				print("Mouse released and MW_GraphCollection.py eventFilter() running")
+				#print("Mouse released and MW_GraphCollection.py eventFilter() running")
 				x_range = self.graphs["s_ecg"].viewRange()[0]
 				window_length = math.floor(x_range[1] - x_range[0])
 				increments = self.computeIncrements(window_length)

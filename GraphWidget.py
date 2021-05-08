@@ -240,17 +240,8 @@ class GraphWidget(pg.PlotWidget):
 		s_ecg = self.case["data"]["s_ecg"]
 		
 		xyRatios = Utility.getRangeRatio(self.getViewBox())
-		"""Beregning av størrelser for sirkler.
-		print("PLOT QRS")
-		print("ViewBox ranges:" + str(self.getViewBox().state["viewRange"]))
-		print(
-			"Pixels height: " + str(self.getViewBox().boundingRect().height()) + 
-			" & Pixels width: " + str(self.getViewBox().boundingRect().width())
-			)
-		print(str(xyRatios))
-		"""
-		sizeX = xyRatios["ratioX"]/np.log10(xyRatios["diff"])
-		sizeY = xyRatios["ratioY"]/np.log10(xyRatios["diff"])
+		sizeX = xyRatios["sizeX"]
+		sizeY = xyRatios["sizeY"]
 
 		for i in range(len(t_qrs)):
 			x0 = t_qrs[i][0]*self.frequency #Her trengs ikke int(np.round())
@@ -268,8 +259,8 @@ class GraphWidget(pg.PlotWidget):
 		s_vent = self.case["data"]["s_vent"]
 		
 		xyRatios = Utility.getRangeRatio(self.getViewBox())
-		sizeX = xyRatios["ratioX"]/np.log10(xyRatios["diff"])
-		sizeY = xyRatios["ratioY"]/np.log10(xyRatios["diff"])
+		sizeX = xyRatios["sizeX"]
+		sizeY = xyRatios["sizeY"]
 
 		for i in range(len(t_vent)):
 			x0 = t_vent[i][0]*self.frequency #Her trengs ikke int(np.round())
@@ -290,8 +281,8 @@ class GraphWidget(pg.PlotWidget):
 		s_CO2 = self.case["data"]["s_CO2"]
 		
 		xyRatios = Utility.getRangeRatio(self.getViewBox())
-		sizeX = xyRatios["ratioX"]/np.log10(xyRatios["diff"])
-		sizeY = xyRatios["ratioY"]/np.log10(xyRatios["diff"])
+		sizeX = xyRatios["sizeX"]
+		sizeY = xyRatios["sizeY"]
 
 		for i in range(len(t_cap)):
 			nMin = (t_cap[i][0])*self.frequency
