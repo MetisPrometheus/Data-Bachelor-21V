@@ -1,7 +1,7 @@
 import pyqtgraph as pg
 import numpy as np
 
-from PointROI import PointROI
+from ROIs.PointROI import PointROI
 
 from PyQt5 import QtCore as qtc
 

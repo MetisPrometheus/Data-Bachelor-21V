@@ -5,9 +5,11 @@ from time import time
 
 #Own libraries
 from Utility import Utility
-from PointROI import PointROI
-from RegionROI import RegionROI
-from PointROIMinMax import PointROIMinMax
+from ROIs.PointROI import PointROI
+from ROIs.RegionROI import RegionROI
+from ROIs.PointROIMinMax import PointROIMinMax
+from CustomViewBox import CustomViewBox
+from ROIs.AddROI import AddROI
 
 #3rd Party Libraries
 import pyqtgraph as pg
@@ -32,12 +34,18 @@ class GraphWidget(pg.PlotWidget):
 	x_start = None
 	x_end = None
 	myCircle = None
-	qrs_submitted = False
-	vent_submitted = False
-	co2_submitted = False
+	#qrs_submitted = False
+	#vent_submitted = False
+	#co2_submitted = False
 
 	MAX_X_RANGE = 50000
 	MIN_X_RANGE = 100
+
+	AnnotatedGraphs = {
+		"s_ecg": False,
+		"s_vent": False,
+		"s_CO2": False,
+	}
 
 	LPcodes_translations = {
 			'Generic': 'Normal respiration',
@@ -53,8 +61,12 @@ class GraphWidget(pg.PlotWidget):
 	}
 
 	def __init__(self, name, useOpenGL=True):
-		super().__init__()
 		self.name = name
+		if self.name in self.AnnotatedGraphs:
+			super().__init__(useOpenGL=True, viewBox=CustomViewBox(self.name))
+			self.getViewBox().sigAddRoiRequest.connect(self._addROI)
+		else:
+			super().__init__()
 
 		# self.setXRange(10000, 30000, 0.05)
 		self.setLimits(xMin=-500, minXRange=self.MIN_X_RANGE, maxXRange=self.MAX_X_RANGE)
@@ -66,8 +78,6 @@ class GraphWidget(pg.PlotWidget):
 		self.setBackground('w')
 		#pg.setConfigOption("background", "w")
 		pg.setConfigOption("foreground", "k")
-		if self.qrs_submitted:
-			print("qrs has been submitted")
 
 	#Event triggered when a plotwidget is focused and a key is pressed
 	# def keyPressEvent(self, ev):
@@ -180,16 +190,16 @@ class GraphWidget(pg.PlotWidget):
 		if self.name == "s_ecg":
 			self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 			self._setAnnotations()
-			if self.qrs_submitted:
+			if self.AnnotatedGraphs[self.name]:
 				self._plotQRS()
 		elif self.name == "s_vent":
-			if self.vent_submitted:
+			if self.AnnotatedGraphs[self.name]:
 				self._plotVent()
 				self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 			else:
 				self.plot(self.time, self.case["data"]["s_imp"][self.x_start:self.x_end], pen=self.pen)
 		elif self.name == "s_CO2":
-			if self.co2_submitted:
+			if self.AnnotatedGraphs[self.name]:
 				self._plotCOPoints()
 			self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 		else:
@@ -336,42 +346,28 @@ class GraphWidget(pg.PlotWidget):
 			print("Something went wrong. (The vectors anns and t_anns are not the same length)")
 
 	def _submitQRS(self):
-		self.qrs_submitted = True
+		self.AnnotatedGraphs[self.name] = True
+		self.getViewBox().setRoiMenuEnabled(True)
 
 	def _unsubmitQRS(self):
-		self.qrs_submitted = False
+		self.AnnotatedGraphs[self.name] = False
+		self.getViewBox().setRoiMenuEnabled(False)
 
 	def _submitVENT(self):
-		self.vent_submitted = True
+		self.AnnotatedGraphs[self.name] = True
+		self.getViewBox().setRoiMenuEnabled(True)
 
 	def _unsubmitVENT(self):
-		self.vent_submitted = False
+		self.AnnotatedGraphs[self.name] = False
+		self.getViewBox().setRoiMenuEnabled(False)
 
 	def _submitCO2(self):
-		self.co2_submitted = True
+		self.AnnotatedGraphs[self.name] = True
+		self.getViewBox().setRoiMenuEnabled(True)
 
 	def _unsubmitCO2(self):
-		self.co2_submitted = False
-
-	@qtc.pyqtSlot(int, float, float, str, int)
-	def _ROImoved(self, index, pos, size, signal, value):
-		if Utility.isList(value):
-			self.case["metadata"][signal][index][value[0]] = pos/250  
-			self.case["metadata"][signal][index][value[1]] = (pos + size)/250
-		else:
-			self.case["metadata"][signal][index][value] = (pos + 0.5*size)/250
-		self._blockPlotting(False)
-		self.replot()
-
-	@qtc.pyqtSlot(bool)
-	def _blockPlotting(self, toBlock):
-		#print("Emitting blocking signal." + str(toBlock))
-		self.stopPlotting.emit(toBlock)
-
-	@qtc.pyqtSlot(int)
-	def _removeEntry(self, index, signal):
-		self.case["metadata"][signal] = np.delete(self.case["metadata"][signal], index, 0)
-		self.replot()
+		self.AnnotatedGraphs[self.name] = False
+		self.getViewBox().setRoiMenuEnabled(False)
 
 	def _addRegion(self, x0, x1, index, metaSignal, myPointROISizeX):
 		mySlice = RegionROI(
@@ -381,6 +377,10 @@ class GraphWidget(pg.PlotWidget):
 			)
 		self.addItem(mySlice)
 		self._connectSignals(mySlice, metaSignal, [0, 2])
+		
+		if self.name in self.AnnotatedGraphs and self.AnnotatedGraphs[self.name] == True:
+			mySlice.sigHoverEvent.connect(self._disableRoiMenu)
+		
 
 	def _addPoint(self, dataSignal, metaSignal, index, xPoint, sizeX, xPointIndeks, sizeY, isRemovable, penColour):
 		myCircle = PointROI(
@@ -405,3 +405,43 @@ class GraphWidget(pg.PlotWidget):
 		roi.sigRegionChangeFinished.connect(lambda x, y, z: self._ROImoved(x, y, z, metaSignal, values))
 		roi.sigHoverEvent.connect(self._blockPlotting)
 		roi.sigRemoveRequested.connect(lambda x: self._removeEntry(x, metaSignal))
+		#roi.sigRoiClicked.connect(self._printRoiClick)
+	
+	@qtc.pyqtSlot(int, float, float, str, int)
+	def _ROImoved(self, index, pos, size, signal, value):
+		if Utility.isList(value):
+			self.case["metadata"][signal][index][value[0]] = pos/250  
+			self.case["metadata"][signal][index][value[1]] = (pos + size)/250
+		else:
+			self.case["metadata"][signal][index][value] = (pos + 0.5*size)/250
+		self._blockPlotting(False)
+		self.replot()
+
+	@qtc.pyqtSlot(bool)
+	def _blockPlotting(self, toBlock):
+		#print("Emitting blocking signal." + str(toBlock))
+		self.stopPlotting.emit(toBlock)
+
+	@qtc.pyqtSlot(int)
+	def _removeEntry(self, index, signal):
+		self.case["metadata"][signal] = np.delete(self.case["metadata"][signal], index, 0)
+		self.replot()
+
+	@qtc.pyqtSlot(float)
+	def _addROI(self, positionX):
+		metaSignal = None
+		if self.name == "s_ecg":
+			metaSignal = "t_qrs"
+		if self.name == "s_vent":
+			metaSignal = "t_vent"
+		if self.name == "s_CO2":
+			metaSignal = "t_cap"
+		if metaSignal:
+			AddROI.addRoi(
+				self.name, metaSignal, self.case, positionX, Utility.getRangeRatio(self.getViewBox())["sizeX"]
+				)
+
+	@qtc.pyqtSlot(bool)
+	def _disableRoiMenu(self, disable):
+		#print("Sending block menu signal to CustomViewBox")
+		self.getViewBox().setRoiMenuEnabled(not disable)	
