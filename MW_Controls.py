@@ -4,6 +4,7 @@ import json
 #3rd Party Libraries
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
+from PyQt5 import QtGui as qtg
 
 class MW_Controls(qtw.QWidget):
 
@@ -31,9 +32,12 @@ class MW_Controls(qtw.QWidget):
 		self.dropdown_timelines = qtw.QComboBox(currentIndexChanged=self.changeTimeline)
 		self.dropdown_timelines.insertItems(0, ["Timeline 1", "Timeline 2", "Timeline 3"])
 
-		self.add_timeline = qtw.QPushButton("Add", clicked=lambda:self.requestTimelineSettings("Add"))
-		self.remove_timeline= qtw.QPushButton("Delete", clicked=lambda:self.requestTimelineSettings("Delete"))
-		self.edit_timeline = qtw.QPushButton("Edit", clicked=lambda:self.requestTimelineSettings("Edit"))
+		add_icon = qtg.QIcon(qtg.QPixmap("add.png"))
+		self.add_timeline = qtw.QPushButton(icon=add_icon, clicked=lambda:self.requestTimelineSettings("Add"))
+		remove_icon = qtg.QIcon(qtg.QPixmap("remove.png"))
+		self.remove_timeline= qtw.QPushButton(icon=remove_icon, clicked=lambda:self.requestTimelineSettings("Delete"))
+		edit_icon = qtg.QIcon(qtg.QPixmap("edit.png"))
+		self.edit_timeline = qtw.QPushButton(icon=edit_icon, clicked=lambda:self.requestTimelineSettings("Edit"))
 
 		self.checkboxes = {}
 		self.checkboxes["s_ecg"] = qtw.QCheckBox("ECG (mV)", clicked=lambda:self.emitCheckboxState("s_ecg"))
