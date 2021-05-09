@@ -437,9 +437,12 @@ class GraphWidget(pg.PlotWidget):
 		if self.name == "s_CO2":
 			metaSignal = "t_cap"
 		if metaSignal:
-			AddROI.addRoi(
-				self.name, metaSignal, self.case, positionX, Utility.getRangeRatio(self.getViewBox())["sizeX"]
+			message = AddROI.addRoi(
+				self.name, metaSignal, self.case, positionX, Utility.getRangeRatio(self.getViewBox())["sizeX"], 
+				self.getViewBox().state["viewRange"][0], self.getViewBox().boundingRect().width()
 				)
+			print(message)
+			self.replot()
 
 	@qtc.pyqtSlot(bool)
 	def _disableRoiMenu(self, disable):
