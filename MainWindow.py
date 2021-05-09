@@ -32,6 +32,9 @@ class MainWindow(qtw.QWidget):
 		#Receive new span and replot the graphs with a bigger or smaller section		
 		self.MW_Controls.new_span.connect(self.MW_GraphCollection.receiveNewSpan)
 
+		#Receive the x_position from the timeline-bar and replot the graphs from that position
+		self.MW_GraphCollection.tags.x_submitted.connect(self.MW_GraphCollection.receiveTimelineXPos)
+
 		# -------- Layouts --------
 		#Wrap a main_layout around the top-, body- and bottom part of the GUI
 		self.main_layout = qtw.QHBoxLayout()

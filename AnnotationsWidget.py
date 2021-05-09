@@ -1,6 +1,14 @@
+#Standard Libraries
+import math
+
+#3rd Party Libraries
+from PyQt5 import QtCore as qtc
 import pyqtgraph as pg
 
 class AnnotationsWidget(pg.PlotWidget):
+
+    x_submitted = qtc.pyqtSignal(int)
+
     def __init__(self, useOpenGL=True):
         super().__init__()
         self.hideAxis('bottom')
@@ -20,6 +28,7 @@ class AnnotationsWidget(pg.PlotWidget):
                                     'Lidocaine': 'OB',
                                     'Power Off': 'E'
                                     }
+        self.scene().sigMouseClicked.connect(self.mouseClick)
 
     def _setTags(self, case):
         self.clear()
@@ -37,3 +46,6 @@ class AnnotationsWidget(pg.PlotWidget):
                     line = pg.InfiniteLine(pos=case["metadata"]["t_ann"][i]*250, label=self.important_annotations[tag], pen=pg.mkPen('b', width=2), labelOpts={'color': 'w', 'position': 0.6, 'fill': 'b'})
                     self.addItem(line)
 
+    def mouseClick(self, event):
+        xPos = math.floor(self.plotItem.vb.mapSceneToView(event.pos()).x())
+        self.x_submitted.emit(xPos)

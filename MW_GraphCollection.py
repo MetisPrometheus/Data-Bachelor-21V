@@ -104,6 +104,16 @@ class MW_GraphCollection(qtw.QWidget):
 		self.slider.setMaximum(total_increments)
 		return total_increments
 
+	def receiveTimelineXPos(self, xPos):
+		viewRange = self.graphs["s_ecg"].viewRange()[0]
+		window_length = viewRange[1] - viewRange[0]
+
+		#Set slider to nearest tick from the current position
+		inc_step = window_length/5
+		nearest_inc = math.floor(xPos/inc_step) - 2
+		if nearest_inc < 0: nearest_inc = 0
+		self.slider.setValue(nearest_inc)
+
 	def wheelEvent(self, ev):
 		zoom = False if ev.angleDelta().y() == 120 else True
 
