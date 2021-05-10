@@ -51,15 +51,6 @@ class MainWindow(qtw.QWidget):
 		self.statusBar = qtw.QStatusBar()
 		self.statusBar.hide()
 		
-		# self.checkbox1 = qtw.QCheckBox("QRS", clicked=lambda:self.emitCheckboxState(self.checkbox1, 's_ecg'))
-		# self.checkbox2 = qtw.QCheckBox("VENT WF", clicked=lambda:self.emitCheckboxState(self.checkbox2, 's_vent'))
-		# self.checkbox3 = qtw.QCheckBox("CO2 ANNOT", clicked=lambda:self.emitCheckboxState(self.checkbox3, 's_CO2'))
-		#self.checkbox4 = qtw.QCheckBox("TERMINATION", clicked=lambda:self.emitCheckboxState(self.checkbox4, ''))
-
-		# self.left_bar_layout.addWidget(self.checkbox1)
-		# self.left_bar_layout.addWidget(self.checkbox2)
-		# self.left_bar_layout.addWidget(self.checkbox3)
-		#self.left_bar_layout.addWidget(self.checkbox4)
 		
 		self.main_layout.addLayout(self.left_bar_layout)
 		self.main_layout.addLayout(self.graph_layout)

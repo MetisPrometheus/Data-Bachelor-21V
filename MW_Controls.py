@@ -14,7 +14,7 @@ class MW_Controls(qtw.QWidget):
 	new_case_index = qtc.pyqtSignal(int)
 	checkbox_signal = qtc.pyqtSignal(str, bool)
 	overlay_submitted = qtc.pyqtSignal(bool, str)
-
+	timeline_changed = qtc.pyqtSignal(int)
 	checkbox_dict = qtc.pyqtSignal(dict)
 	settings = {}
 
@@ -31,8 +31,8 @@ class MW_Controls(qtw.QWidget):
 		self.dropdown_cases.blockSignals(False)
 
 		self.roi_checkbox1 = qtw.QCheckBox("QRS", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox1, 's_ecg'))
-		self.roi_checkbox2 = qtw.QCheckBox("CO2 ANNOT", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox2, 's_CO2'))
-		self.roi_checkbox3 = qtw.QCheckBox("VENT WF", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox3, 's_vent'))
+		self.roi_checkbox2 = qtw.QCheckBox("VENT WF", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox2, 's_vent'))
+		self.roi_checkbox3 = qtw.QCheckBox("CO2 ANNOT", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox3, 's_CO2'))
 
 		self.dropdown_timelines = qtw.QComboBox(currentIndexChanged=self.changeTimeline)
 		self.dropdown_timelines.insertItems(0, ["Timeline 1", "Timeline 2", "Timeline 3"])
@@ -48,7 +48,6 @@ class MW_Controls(qtw.QWidget):
 		self.checkboxes["s_ecg"] = qtw.QCheckBox("ECG (mV)", clicked=lambda:self.emitCheckboxState("s_ecg"))
 		self.checkboxes["s_CO2"] = qtw.QCheckBox("CO2 (mmHg)", clicked=lambda:self.emitCheckboxState("s_CO2"))
 		self.checkboxes["s_ppg"] = qtw.QCheckBox("PPG (SpO2)", clicked=lambda:self.emitCheckboxState("s_ppg"))
-		#self.checkboxes["s_imp"] = qtw.QCheckBox("imp", clicked=lambda:self.emitCheckboxState("s_imp"))
 		self.checkboxes["s_vent"] = qtw.QCheckBox("TTI (\u03A9)", clicked=lambda:self.emitCheckboxState("s_vent"))
 		self.checkboxes["s_bcg1"] = qtw.QCheckBox("BCG1 (V)", clicked=lambda:self.emitCheckboxState("s_bcg1"))
 		self.checkboxes["s_bcg2"] = qtw.QCheckBox("BCG1 (V)", clicked=lambda:self.emitCheckboxState("s_bcg2"))
@@ -57,7 +56,6 @@ class MW_Controls(qtw.QWidget):
 		self.check_layout.addWidget(self.checkboxes["s_ecg"])
 		self.check_layout.addWidget(self.checkboxes["s_CO2"])
 		self.check_layout.addWidget(self.checkboxes["s_ppg"])
-		#self.check_layout.addWidget(self.checkboxes["s_imp"])
 		self.check_layout.addWidget(self.checkboxes["s_vent"])
 		self.check_layout.addWidget(self.checkboxes["s_bcg1"])
 		self.check_layout.addWidget(self.checkboxes["s_bcg2"])
@@ -165,3 +163,4 @@ class MW_Controls(qtw.QWidget):
 
 	def changeTimeline(self, new_index):
 		print(f"Timeline index changed to: {new_index}")
+		self.timeline_changed.emit(new_index)

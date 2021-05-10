@@ -293,3 +293,6 @@ class MW_GraphCollection(qtw.QWidget):
 	@qtc.pyqtSlot(bool)
 	def blockPlotting(self, toBlock):
 		self.stopPlot = toBlock
+
+	def refreshTimeline(self, case):
+		self.tags._setTags(case)

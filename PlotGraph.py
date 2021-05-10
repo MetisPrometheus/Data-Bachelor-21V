@@ -19,8 +19,6 @@ class PlotGraph(pg.PlotWidget):
 
 	def __init__(self, data):
 		super().__init__()
-		# pg.setConfigOption("background", "w")
-		# pg.setConfigOption("foreground", "k")
 		self.storeData(data)
 
 	def storeData(self, data):
