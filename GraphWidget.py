@@ -406,7 +406,6 @@ class GraphWidget(pg.PlotWidget):
 		roi.sigRegionChangeFinished.connect(lambda x, y, z: self._ROImoved(x, y, z, metaSignal, values))
 		roi.sigHoverEvent.connect(self._blockPlotting)
 		roi.sigRemoveRequested.connect(lambda x: self._removeEntry(x, metaSignal))
-		#roi.sigRoiClicked.connect(self._printRoiClick)
 	
 	@qtc.pyqtSlot(int, float, float, str, int)
 	def _ROImoved(self, index, pos, size, signal, value):
