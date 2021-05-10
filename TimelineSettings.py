@@ -53,7 +53,7 @@ class TimelineSettings(qtw.QWidget):
 			self.input.setText(f"{current_timeline}")
 
 		elif self.option == "Delete":
-			self.label.setText(f"Delete Current Timeline?")
+			self.label.setText("Delete Current Timeline?")
 			self.input.hide()
 
 		self.show()
@@ -62,6 +62,7 @@ class TimelineSettings(qtw.QWidget):
 		if len(self.input.text()) == 0:
 			self.label.setText("This field can't be left empty!")
 		else:
+			print("self.option:",self.option, self.input.text())
 			self.timeline_submitted.emit(self.option, self.input.text())
 			self.close()
 

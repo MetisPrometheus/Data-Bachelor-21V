@@ -79,7 +79,7 @@ class DataController(qtw.QWidget):
 	#Every Case
 	case_submitted = qtc.pyqtSignal(dict)
 
-	timeline_submitted = qtc.pyqtSignal(dict)
+
 
 	settings = {}
 
@@ -120,51 +120,21 @@ class DataController(qtw.QWidget):
 		#Make a list of case names from the metadata file and sort them for indexing.
 		self.CASE_NAMES = list(self.annotationsDataset.keys())
 		self.getCaseNames().sort()
-
+		#print("self.annotationsDataset:", self.annotationsDataset)
 		#Explain later
 		self.filenames_submitted.emit(self.getCaseNames())
 
 		#Since this is the first case -> new_index = False (default value)
 		case = self.getCase()
 		
-	def updateTimelines(self, option, timeline):
-		if option == "Add":
-			self.timeline_submitted.emit(case)
-			#print("OPTION AND CASE: ",option,timeline)
-		elif option == "Delete":
-			#TODO (Emil/Sebbi)
-			#self.MW_GraphCollection.tags.clear()
-			pass
-		elif option == "Edit":
-			#TODO (Emil/Sebbi)
-			'''
-			eksempel:
-			case["annotations"][new_timeline] = case["annotations"][old_timeline]
-			del case["annotations"][old_timeline]
-			'''
 
-	# def updateTimelines(self, option, timeline):
-	# 	if option == "Add":
-	# 		self.timeline_submitted.emit(case)
-	# 	elif option == "Delete":
-	# 		#TODO (Emil/Sebbi)
-
-	# 	elif option == "Edit":
-	# 		#TODO (Emil/Sebbi)
-	# 		'''
-	# 		eksempel:
-	# 		case["annotations"][new_timeline] = case["annotations"][old_timeline]
-	# 		del case["annotations"][old_timeline]
-	# 		'''
-
-	# def updateTimeline(self, index):
-	# 	self.MW_GraphCollection.tags.clear()
 
 	def getCaseNames(self):
 		return self.CASE_NAMES
 
 	def getCase(self, new_case_index=False):
 		case = dict()
+		self.currentCase = self.getCaseNames()[new_case_index]
 		caseName = self.getCaseNames()[new_case_index]
 		if not os.path.isdir(self.DATASET_FILEPATH + self.SUBSET_LP15 + "Pickle"):
 			os.mkdir(self.DATASET_FILEPATH + self.SUBSET_LP15 + "Pickle")

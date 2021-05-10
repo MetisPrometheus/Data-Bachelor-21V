@@ -18,8 +18,9 @@ class MainWindow(qtw.QWidget):
 	slider_incs_submitted = qtc.pyqtSignal(int)
 	span_submitted = qtc.pyqtSignal(int)
 	# overlay_submitted = qtc.pyqtSignal(bool, str)
-
+	timeline_submitted = qtc.pyqtSignal(dict)
 	settings = {}
+
 
 	def __init__(self):
 		super().__init__()
@@ -93,6 +94,7 @@ class MainWindow(qtw.QWidget):
 		self.MW_Controls.createCheckboxes(case["settings"])
 		self.MW_GraphCollection.setDataLength(len(case["data"]["s_ecg"])) #Can use any signal (all same length)
 		self.MW_GraphCollection.plotGraphs(case)
+		self.case = case
 
 	def initializeWindowSize(self, saved_settings):
 		self.settings = saved_settings
@@ -133,3 +135,22 @@ class MainWindow(qtw.QWidget):
 	def emitCheckboxState(self, signal, data):
 		state = signal.isChecked()
 		self.overlay_submitted.emit(state, data)
+
+	def updateTimelines(self, option, timeline):
+		empty_array = []
+		if option == "Add":
+			self.case["metadata"].update({timeline: empty_array})
+			self.case["metadata"].update({"t_" + timeline: empty_array})
+			# self.annotationsDataset[self.currentCase])
+		elif option == "Delete":
+			if timeline in self.case["metadata"]:
+				self.case["metadata"].popitem()
+				self.case["metadata"].popitem()
+			else:
+				print("This timeline does not exist.")
+		elif option == "Edit":
+			self.case["metadata"].update({timeline: empty_array})
+			self.case["metadata"].update({"t_" + timeline: empty_array})
+
+		print(self.case["metadata"])
+		self.timeline_submitted.emit(self.case)

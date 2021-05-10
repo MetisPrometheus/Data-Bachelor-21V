@@ -27,6 +27,7 @@ class MW_GraphCollection(qtw.QWidget):
 	data_length = None
 	settings = {}
 	stopPlot = False
+	timeline_index = 0
 
 	MAX_X_RANGE = 50000
 	MIN_X_RANGE = 100
@@ -182,7 +183,7 @@ class MW_GraphCollection(qtw.QWidget):
 		date = case["metadata"]["rec_date"]
 		time = case["metadata"]["rec_time"]
 		sample_rate = case["data"]["fs"]
-
+		self.case = case
 		self.tags._setTags(case)
 		self._normalizeSignals(case)
 
@@ -296,3 +297,8 @@ class MW_GraphCollection(qtw.QWidget):
 
 	def refreshTimeline(self, case):
 		self.tags._setTags(case)
+	
+	def chooseTimeline(self, index):
+		if index == 0:
+			self.tags._setTags(self.case)
+		
