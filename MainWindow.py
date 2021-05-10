@@ -27,7 +27,8 @@ class MainWindow(qtw.QWidget):
 		# -------- Main Window Sections --------
 		self.MW_Controls = MW_Controls()
 		self.MW_GraphCollection = MW_GraphCollection()
-
+		self.setWindowTitle('Resprog')
+		
 		# -------- Signals & Slots -------- 
 		#Receive checkbox signal from the controller widget and determine whether to toggle graphs on or off
 		self.MW_Controls.checkbox_signal.connect(self.MW_GraphCollection.receiveCheckboxSignal)

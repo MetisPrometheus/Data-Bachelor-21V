@@ -7,7 +7,6 @@ from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
 
 
-
 class InitialWindow(qtw.QWidget):
 
 	settings_submitted = qtc.pyqtSignal(dict)
@@ -21,8 +20,15 @@ class InitialWindow(qtw.QWidget):
 		print("--- Initial Window Created ---")
 		self.launch = qtw.QPushButton("Start", clicked=self.launchGUI)
 		self.button = qtw.QPushButton("Settings", clicked=self.requestDirectory)
-
+		#window title
+		self.setWindowTitle('Initial Window')
+		self.setFixedSize(300,300)
+		#set text label
+		self.label = qtw.QLabel(self)
+		self.label.adjustSize()
+		self.label.setText('Welcome to our program. If you are using it for the first time please chose the annotations and dataset folders by pressing the Settings button.')
 		self.setLayout(qtw.QVBoxLayout())
+		self.layout().addWidget(self.label)
 		self.layout().addWidget(self.launch)
 		self.layout().addWidget(self.button)
 
