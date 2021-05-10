@@ -55,14 +55,8 @@ class Utility(object):
         yPixels = vb.boundingRect().height()
         yRatio = yDiff/yPixels
 
-        #For det meste så vil Y spennet være mindre enn X, så start med dette for å spare tid.
-        #Ikke sløs tid på å beregne diffY/diffY, heller.
-        if yRatio < xRatio:
-            ySize = yRatio*prefPixelSize
-            xSize = xRatio*prefPixelSize
-        else:
-            xSize = yRatio*prefPixelSize
-            ySize = xRatio*prefPixelSize
+        ySize = yRatio*prefPixelSize
+        xSize = xRatio*prefPixelSize
 
         return {"sizeX": xSize/np.log10(xDiff*0.05), "sizeY": ySize/np.log10(xDiff*0.05)}
 

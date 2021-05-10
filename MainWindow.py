@@ -42,6 +42,7 @@ class MainWindow(qtw.QWidget):
 
 		#Receive statusbar updates
 		self.MW_Controls.console_msg_submitted.connect(self.setStatus)
+		self.MW_GraphCollection.sigStatusMessage.connect(self.setStatus)
 
 		# -------- Layouts --------
 		#Wrap a main_layout around the top-, body- and bottom part of the GUI
@@ -59,7 +60,7 @@ class MainWindow(qtw.QWidget):
 		self.graph_layout.addWidget(self.statusBar)
 		self.setLayout(self.main_layout)
 	
-	@qtc.pyqtSlot(str, float)
+	@qtc.pyqtSlot(str, int)
 	def setStatus(self, message, timer):
 		if self.statusBar.currentMessage() == "":
 			self.statusBar.show()

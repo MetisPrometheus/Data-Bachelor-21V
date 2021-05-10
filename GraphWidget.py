@@ -18,7 +18,7 @@ from PyQt5 import QtCore as qtc
 class GraphWidget(pg.PlotWidget):
 	#Slots
 	stopPlotting = qtc.pyqtSignal(bool)
-	sigRoiMessage = qtc.pyqtSignal(str, float)
+	sigRoiMessage = qtc.pyqtSignal(str, int)
 
 	#Class variables
 	name = None
@@ -495,5 +495,5 @@ class GraphWidget(pg.PlotWidget):
 		#print("Sending block menu signal to CustomViewBox")
 		self.getViewBox().setRoiMenuEnabled(not disable)
 	
-	def _emitRoiMessage(self, msg, miliSeconds=5000.0):
+	def _emitRoiMessage(self, msg, miliSeconds=5000):
 		self.sigRoiMessage.emit(msg, miliSeconds)

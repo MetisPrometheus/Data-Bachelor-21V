@@ -21,7 +21,7 @@ class MW_GraphCollection(qtw.QWidget):
 	new_case_index = qtc.pyqtSignal(int)
 	slider_incs_submitted = qtc.pyqtSignal(int)
 	span_submitted = qtc.pyqtSignal(int)
-	sigStatusMessage = qtc.pyqtSignal(str, float)
+	sigStatusMessage = qtc.pyqtSignal(str, int)
 	
 	#Class Variables
 	span = 60
@@ -296,7 +296,7 @@ class MW_GraphCollection(qtw.QWidget):
 	def _blockPlotting(self, toBlock):
 		self.stopPlot = toBlock
 
-	@qtc.pyqtSlot(str, float)
+	@qtc.pyqtSlot(str, int)
 	def _setStatusMessage(self, msg, miliSeconds):
 		self.sigStatusMessage.emit(msg, miliSeconds)
 
