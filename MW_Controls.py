@@ -31,8 +31,8 @@ class MW_Controls(qtw.QWidget):
 		self.dropdown_cases.blockSignals(False)
 
 		self.roi_checkbox1 = qtw.QCheckBox("QRS", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox1, 's_ecg'))
-		self.roi_checkbox2 = qtw.QCheckBox("VENT WF", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox2, 's_vent'))
-		self.roi_checkbox3 = qtw.QCheckBox("CO2 ANNOT", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox3, 's_CO2'))
+		self.roi_checkbox2 = qtw.QCheckBox("CO2 ANNOT", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox2, 's_CO2'))
+		self.roi_checkbox3 = qtw.QCheckBox("VENT WF", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox3, 's_vent'))
 
 		self.dropdown_timelines = qtw.QComboBox(currentIndexChanged=self.changeTimeline)
 		self.dropdown_timelines.insertItems(0, ["Timeline 1", "Timeline 2", "Timeline 3"])
