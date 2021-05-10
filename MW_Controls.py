@@ -13,6 +13,7 @@ class MW_Controls(qtw.QWidget):
 	new_span = qtc.pyqtSignal(int)
 	new_case_index = qtc.pyqtSignal(int)
 	checkbox_signal = qtc.pyqtSignal(str, bool)
+	overlay_submitted = qtc.pyqtSignal(bool, str)
 
 	checkbox_dict = qtc.pyqtSignal(dict)
 	settings = {}
@@ -28,6 +29,10 @@ class MW_Controls(qtw.QWidget):
 		self.dropdown_cases.blockSignals(True)
 		self.dropdown_span.insertItems(0, span)
 		self.dropdown_cases.blockSignals(False)
+
+		self.roi_checkbox1 = qtw.QCheckBox("QRS", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox1, 's_ecg'))
+		self.roi_checkbox2 = qtw.QCheckBox("VENT WF", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox2, 's_vent'))
+		self.roi_checkbox3 = qtw.QCheckBox("CO2 ANNOT", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox3, 's_CO2'))
 
 		self.dropdown_timelines = qtw.QComboBox(currentIndexChanged=self.changeTimeline)
 		self.dropdown_timelines.insertItems(0, ["Timeline 1", "Timeline 2", "Timeline 3"])
@@ -60,6 +65,11 @@ class MW_Controls(qtw.QWidget):
 		self.dropdown_layout = qtw.QHBoxLayout()
 		self.dropdown_layout.addWidget(self.dropdown_cases)
 		self.dropdown_layout.addWidget(self.dropdown_span)
+
+		self.dropdown_layout.addWidget(self.roi_checkbox1)
+		self.dropdown_layout.addWidget(self.roi_checkbox2)
+		self.dropdown_layout.addWidget(self.roi_checkbox3)
+
 		self.dropdown_layout.addWidget(self.dropdown_timelines)
 		self.dropdown_layout.addWidget(self.add_timeline)
 		self.dropdown_layout.addWidget(self.remove_timeline)
@@ -70,6 +80,10 @@ class MW_Controls(qtw.QWidget):
 		self.top_layout.addLayout(self.check_layout)
 		self.setLayout(self.top_layout)
 
+	def emitRoiCheckboxState(self, signal, data):
+		state = signal.isChecked()
+		self.overlay_submitted.emit(state, data)
+		
 	def requestTimelineSettings(self, option):
 		current_timeline = self.dropdown_timelines.currentText()
 		self.request_timeline_window.emit(option, current_timeline)

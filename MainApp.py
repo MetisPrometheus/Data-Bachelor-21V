@@ -51,7 +51,8 @@ class MainApp(qtw.QApplication):
 		#When the application is closed, save the checkstates of the checkboxes in settings.txt
 		self.main_window.MW_Controls.checkbox_dict.connect(self.data_controller.saveCheckboxStates)
 
-		self.main_window.overlay_submitted.connect(self.main_window.MW_GraphCollection.toggleOverlay)
+		self.main_window.MW_Controls.overlay_submitted.connect(self.main_window.MW_GraphCollection.toggleOverlay)
+		# self.main_window.overlay_submitted.connect(self.main_window.MW_GraphCollection.toggleOverlay)
 		
 
 
