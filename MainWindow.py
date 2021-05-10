@@ -35,11 +35,17 @@ class MainWindow(qtw.QWidget):
 		#Receive the x_position from the timeline-bar and replot the graphs from that position
 		self.MW_GraphCollection.tags.x_submitted.connect(self.MW_GraphCollection.receiveTimelineXPos)
 
+		#Receive statusbar updates
+		# self.MW_Controls.test_signal.connect(self.setStatus) #Eksempel
+
 		# -------- Layouts --------
 		#Wrap a main_layout around the top-, body- and bottom part of the GUI
 		self.main_layout = qtw.QHBoxLayout()
 		self.graph_layout = qtw.QVBoxLayout()
 		self.left_bar_layout = qtw.QVBoxLayout()
+
+		self.statusBar = qtw.QStatusBar()
+		self.statusBar.hide()
 		
 		self.checkbox1 = qtw.QCheckBox("QRS", clicked=lambda:self.emitCheckboxState(self.checkbox1, 's_ecg'))
 		self.checkbox2 = qtw.QCheckBox("VENT WF", clicked=lambda:self.emitCheckboxState(self.checkbox2, 's_vent'))
@@ -55,8 +61,29 @@ class MainWindow(qtw.QWidget):
 		self.main_layout.addLayout(self.graph_layout)
 		self.graph_layout.addWidget(self.MW_Controls)
 		self.graph_layout.addWidget(self.MW_GraphCollection)
+		self.graph_layout.addWidget(self.statusBar)
 		self.setLayout(self.main_layout)
 
+	def setStatus(self, message, timer):
+		if self.statusBar.currentMessage() == "":
+			self.statusBar.show()
+			self.statusBar.showMessage(message, timer)
+
+			geometry = self.geometry()
+			geometry.setHeight(geometry.height()+26) #statusbar pixelheight = 26
+			self.setGeometry(geometry)
+
+			self.timer = qtc.QTimer()
+			self.timer.timeout.connect(self.hideBar)
+			self.timer.start(timer)
+
+	def hideBar(self):
+		self.statusBar.hide()
+		geometry = self.geometry()
+		geometry.setHeight(geometry.height()-26) #statusbar pixelheight = 26
+		self.setGeometry(geometry)
+		self.timer.stop()
+		
 	#Pass along the filenames to its dropdown-menu in MW_Controls
 	def receiveFilenames(self, filenames):
 		self.MW_Controls.showCases(filenames)
