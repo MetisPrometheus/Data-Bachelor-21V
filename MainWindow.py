@@ -40,7 +40,7 @@ class MainWindow(qtw.QWidget):
 		self.MW_GraphCollection.tags.x_submitted.connect(self.MW_GraphCollection.receiveTimelineXPos)
 
 		#Receive statusbar updates
-		# self.MW_Controls.test_signal.connect(self.setStatus) #Eksempel
+		self.MW_Controls.console_msg_submitted.connect(self.setStatus)
 
 		# -------- Layouts --------
 		#Wrap a main_layout around the top-, body- and bottom part of the GUI
@@ -50,7 +50,6 @@ class MainWindow(qtw.QWidget):
 
 		self.statusBar = qtw.QStatusBar()
 		self.statusBar.hide()
-		
 		
 		self.main_layout.addLayout(self.left_bar_layout)
 		self.main_layout.addLayout(self.graph_layout)
@@ -91,6 +90,7 @@ class MainWindow(qtw.QWidget):
 		#TODO: Fjern eller så må vi hente ut info i DataController.
 		self.initializeWindowSize(case["settings"])
 		self.MW_Controls.createCheckboxes(case["settings"])
+		self.MW_Controls.receiveInputValues(co2=case["metadata"]["t_CO2"], bcg=case["metadata"]["t_bcg"])
 		self.MW_GraphCollection.setDataLength(len(case["data"]["s_ecg"])) #Can use any signal (all same length)
 		self.MW_GraphCollection.plotGraphs(case)
 
