@@ -1,6 +1,7 @@
 #Standard Libraries
 import os
 import json
+import math
 
 #3rd Party Libraries
 from PyQt5 import QtWidgets as qtw
@@ -18,6 +19,7 @@ class MainWindow(qtw.QWidget):
 	span_submitted = qtc.pyqtSignal(int)
 	overlay_submitted = qtc.pyqtSignal(bool, str)
 
+	settings = {}
 	def __init__(self):
 		super().__init__()
 		print("--- Main Window (GUI) Created ---")
@@ -83,7 +85,7 @@ class MainWindow(qtw.QWidget):
 		geometry.setHeight(geometry.height()-26) #statusbar pixelheight = 26
 		self.setGeometry(geometry)
 		self.timer.stop()
-		
+
 	#Pass along the filenames to its dropdown-menu in MW_Controls
 	def receiveFilenames(self, filenames):
 		self.MW_Controls.showCases(filenames)
@@ -94,15 +96,46 @@ class MainWindow(qtw.QWidget):
 
 	def receiveNewCase(self, case):
 		#TODO: Fjern eller så må vi hente ut info i DataController.
+		self.initializeWindowSize(case["settings"])
 		self.MW_Controls.createCheckboxes(case["settings"])
-		self.MW_GraphCollection.setDataLength(len(case["data"]["s_ecg"])) #Can use any signal (same length)
+		self.MW_GraphCollection.setDataLength(len(case["data"]["s_ecg"])) #Can use any signal (all same length)
 		self.MW_GraphCollection.plotGraphs(case)
+
+	def initializeWindowSize(self, saved_settings):
+		self.settings = saved_settings
+		if "gui_box" in self.settings.keys():
+			saved_box = self.settings["gui_box"]
+			current_box = self.geometry()
+			current_box.setRect(saved_box[0], saved_box[1], saved_box[2], saved_box[3])
+			self.setGeometry(current_box)
+		else:
+			desktop_screen = qtw.QDesktopWidget().screenGeometry(-1)
+			screen_width = desktop_screen.width()
+			screen_heigth = desktop_screen.height()
+			gui_width = math.floor(screen_width*0.75)
+			gui_height = math.floor(screen_heigth*0.75)
+			gui_left = math.floor((screen_width-gui_width)/2)
+			gui_top = math.floor((screen_heigth-gui_height)/2)
+
+			#Enter new QRect values
+			desktop_screen.setWidth(gui_width)
+			desktop_screen.setHeight(gui_height)
+			desktop_screen.moveLeft(gui_left)
+			desktop_screen.moveTop(gui_top)
+			self.setGeometry(desktop_screen)
 
 	def closeEvent(self, argv):
 		super().closeEvent(argv)
 		print("||| Main Window (GUI) Closed |||")
 		self.MW_Controls.saveCheckboxStates()
 		self.MW_GraphCollection.saveDockState()
+		self.saveWindowSize()
+
+	def saveWindowSize(self):
+		print("**The gui size and position have been saved**")
+		self.settings["gui_box"] = self.geometry().getRect()
+		with open("settings.txt", "w") as f:
+			json.dump(self.settings, f)
 
 	def emitCheckboxState(self, signal, data):
 		state = signal.isChecked()
