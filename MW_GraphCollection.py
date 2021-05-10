@@ -299,3 +299,6 @@ class MW_GraphCollection(qtw.QWidget):
 	@qtc.pyqtSlot(str, float)
 	def _setStatusMessage(self, msg, miliSeconds):
 		self.sigStatusMessage.emit(msg, miliSeconds)
+
+	def refreshTimeline(self, case):
+		self.tags._setTags(case)

@@ -18,6 +18,7 @@ from PyQt5 import QtCore as qtc
 
 #Own classes.
 from Utility import Utility
+from MW_GraphCollection import MW_GraphCollection
 #####################
 #ClassDataController#
 #####################
@@ -78,6 +79,8 @@ class DataController(qtw.QWidget):
 	#Every Case
 	case_submitted = qtc.pyqtSignal(dict)
 
+	timeline_submitted = qtc.pyqtSignal(dict)
+
 	settings = {}
 
 	def __init__(self):
@@ -126,17 +129,12 @@ class DataController(qtw.QWidget):
 		
 	def updateTimelines(self, option, timeline):
 		if option == "Add":
-			#TODO (Emil/Sebbi)
-			'''
-			case["annotaitons"][timeline] = {} idk kaslags format det e lagra i men du fatte
-			'''
-
+			self.timeline_submitted.emit(case)
+			#print("OPTION AND CASE: ",option,timeline)
 		elif option == "Delete":
 			#TODO (Emil/Sebbi)
-			'''
-			del case["annotations"][timeline]
-			'''
-
+			#self.MW_GraphCollection.tags.clear()
+			pass
 		elif option == "Edit":
 			#TODO (Emil/Sebbi)
 			'''
@@ -144,6 +142,23 @@ class DataController(qtw.QWidget):
 			case["annotations"][new_timeline] = case["annotations"][old_timeline]
 			del case["annotations"][old_timeline]
 			'''
+
+	# def updateTimelines(self, option, timeline):
+	# 	if option == "Add":
+	# 		self.timeline_submitted.emit(case)
+	# 	elif option == "Delete":
+	# 		#TODO (Emil/Sebbi)
+
+	# 	elif option == "Edit":
+	# 		#TODO (Emil/Sebbi)
+	# 		'''
+	# 		eksempel:
+	# 		case["annotations"][new_timeline] = case["annotations"][old_timeline]
+	# 		del case["annotations"][old_timeline]
+	# 		'''
+
+	# def updateTimeline(self, index):
+	# 	self.MW_GraphCollection.tags.clear()
 
 	def getCaseNames(self):
 		return self.CASE_NAMES

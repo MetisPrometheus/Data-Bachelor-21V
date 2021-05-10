@@ -14,9 +14,14 @@ class MW_Controls(qtw.QWidget):
 	new_case_index = qtc.pyqtSignal(int)
 	checkbox_signal = qtc.pyqtSignal(str, bool)
 	overlay_submitted = qtc.pyqtSignal(bool, str)
-
+	timeline_changed = qtc.pyqtSignal(int)
 	checkbox_dict = qtc.pyqtSignal(dict)
+	co2_input_submitted = qtc.pyqtSignal(float)
+	bcg_input_submitted = qtc.pyqtSignal(int)
+	console_msg_submitted = qtc.pyqtSignal(str, int)
 	settings = {}
+	co2 = None
+	bcg = None
 
 	def __init__(self):
 		super().__init__()
@@ -30,9 +35,21 @@ class MW_Controls(qtw.QWidget):
 		self.dropdown_span.insertItems(0, span)
 		self.dropdown_cases.blockSignals(False)
 
+		self.co2_label = qtw.QLabel("CO2:")
+		self.co2_label.setFixedWidth(25)
+		self.co2_input = qtw.QLineEdit(returnPressed=self.co2InputEntered)
+		self.co2_input.setValidator(qtg.QDoubleValidator())
+		self.co2_input.setFixedWidth(25)
+
+		self.bcg_label = qtw.QLabel("BCG:")
+		self.bcg_label.setFixedWidth(25)
+		self.bcg_input = qtw.QLineEdit(returnPressed=self.bcgInputEntered)
+		self.bcg_input.setValidator(qtg.QIntValidator())
+		self.bcg_input.setFixedWidth(25)
+
 		self.roi_checkbox1 = qtw.QCheckBox("QRS", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox1, 's_ecg'))
-		self.roi_checkbox2 = qtw.QCheckBox("CO2 ANNOT", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox2, 's_CO2'))
-		self.roi_checkbox3 = qtw.QCheckBox("VENT WF", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox3, 's_vent'))
+		self.roi_checkbox2 = qtw.QCheckBox("VENT WF", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox2, 's_vent'))
+		self.roi_checkbox3 = qtw.QCheckBox("CO2 ANNOT", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox3, 's_CO2'))
 
 		self.dropdown_timelines = qtw.QComboBox(currentIndexChanged=self.changeTimeline)
 		self.dropdown_timelines.insertItems(0, ["Timeline 1", "Timeline 2", "Timeline 3"])
@@ -48,7 +65,6 @@ class MW_Controls(qtw.QWidget):
 		self.checkboxes["s_ecg"] = qtw.QCheckBox("ECG (mV)", clicked=lambda:self.emitCheckboxState("s_ecg"))
 		self.checkboxes["s_CO2"] = qtw.QCheckBox("CO2 (mmHg)", clicked=lambda:self.emitCheckboxState("s_CO2"))
 		self.checkboxes["s_ppg"] = qtw.QCheckBox("PPG (SpO2)", clicked=lambda:self.emitCheckboxState("s_ppg"))
-		#self.checkboxes["s_imp"] = qtw.QCheckBox("imp", clicked=lambda:self.emitCheckboxState("s_imp"))
 		self.checkboxes["s_vent"] = qtw.QCheckBox("TTI (\u03A9)", clicked=lambda:self.emitCheckboxState("s_vent"))
 		self.checkboxes["s_bcg1"] = qtw.QCheckBox("BCG1 (V)", clicked=lambda:self.emitCheckboxState("s_bcg1"))
 		self.checkboxes["s_bcg2"] = qtw.QCheckBox("BCG1 (V)", clicked=lambda:self.emitCheckboxState("s_bcg2"))
@@ -57,7 +73,6 @@ class MW_Controls(qtw.QWidget):
 		self.check_layout.addWidget(self.checkboxes["s_ecg"])
 		self.check_layout.addWidget(self.checkboxes["s_CO2"])
 		self.check_layout.addWidget(self.checkboxes["s_ppg"])
-		#self.check_layout.addWidget(self.checkboxes["s_imp"])
 		self.check_layout.addWidget(self.checkboxes["s_vent"])
 		self.check_layout.addWidget(self.checkboxes["s_bcg1"])
 		self.check_layout.addWidget(self.checkboxes["s_bcg2"])
@@ -70,6 +85,11 @@ class MW_Controls(qtw.QWidget):
 		self.dropdown_layout.addWidget(self.roi_checkbox2)
 		self.dropdown_layout.addWidget(self.roi_checkbox3)
 
+		self.dropdown_layout.addWidget(self.co2_label)
+		self.dropdown_layout.addWidget(self.co2_input)
+		self.dropdown_layout.addWidget(self.bcg_label)
+		self.dropdown_layout.addWidget(self.bcg_input)
+
 		self.dropdown_layout.addWidget(self.dropdown_timelines)
 		self.dropdown_layout.addWidget(self.add_timeline)
 		self.dropdown_layout.addWidget(self.remove_timeline)
@@ -79,6 +99,34 @@ class MW_Controls(qtw.QWidget):
 		self.top_layout.addLayout(self.dropdown_layout)
 		self.top_layout.addLayout(self.check_layout)
 		self.setLayout(self.top_layout)
+
+	def receiveInputValues(self, co2, bcg):
+		self.co2 = co2
+		self.bcg = bcg
+		self.co2_input.setText(f"{self.co2}")
+		self.bcg_input.setText(f"{self.bcg}")
+
+	def co2InputEntered(self):
+		number = float(self.co2_input.text())
+		self.co2_input.setText(str(number))
+		if -1.5 <= number <= 1.5:
+			self.co2 = number
+			self.co2_input_submitted.emit(number)
+		else:
+			self.co2_input.setText(f"{self.co2}")
+			self.console_msg_submitted.emit("Invalid CO2 value submitted. Allowed values are between -1.5 to 1.5.", 5000)
+		print(f"The user has entered value: {number} in the co2 input field")
+
+	def bcgInputEntered(self):
+		number = int(self.bcg_input.text())
+		self.bcg_input.setText(str(number))
+		if number >= 0:
+			self.bcg = number
+			self.bcg_input_submitted.emit(number)
+		else:
+			self.bcg_input.setText(f"{self.bcg}")
+			self.console_msg_submitted.emit("Invalid BCG value submitted. Only positive integers allowed.", 5000)
+		print(f"The user has entered value: {number} in the bcg input field")
 
 	def emitRoiCheckboxState(self, signal, data):
 		state = signal.isChecked()
@@ -165,3 +213,4 @@ class MW_Controls(qtw.QWidget):
 
 	def changeTimeline(self, new_index):
 		print(f"Timeline index changed to: {new_index}")
+		self.timeline_changed.emit(new_index)
