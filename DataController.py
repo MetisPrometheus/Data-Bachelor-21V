@@ -205,6 +205,10 @@ class DataController(qtw.QWidget):
 			json.dump(self.settings, f)
 	#TODO: Disse kan kanskje legges til en egen statisk utility klasse?
 	
+	def saveMetadata(self, toSave):
+		if toSave:
+			print("Saving metadata files.")
+
 	def _prepDataset(self, dataset):
 		Utility.flattenVector(dataset)
 		Utility.array2NumpyArray(dataset)

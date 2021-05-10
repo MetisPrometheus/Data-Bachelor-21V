@@ -18,6 +18,7 @@ from PyQt5 import QtCore as qtc
 class GraphWidget(pg.PlotWidget):
 	#Slots
 	stopPlotting = qtc.pyqtSignal(bool)
+	sigRoiMessage = qtc.pyqtSignal(str, int)
 
 	#Class variables
 	name = None
@@ -405,17 +406,61 @@ class GraphWidget(pg.PlotWidget):
 		roi.sigRegionChangeFinished.connect(lambda x, y, z: self._ROImoved(x, y, z, metaSignal, values))
 		roi.sigHoverEvent.connect(self._blockPlotting)
 		roi.sigRemoveRequested.connect(lambda x: self._removeEntry(x, metaSignal))
-		#roi.sigRoiClicked.connect(self._printRoiClick)
 	
 	@qtc.pyqtSlot(int, float, float, str, int)
 	def _ROImoved(self, index, pos, size, signal, value):
-		if Utility.isList(value):
-			self.case["metadata"][signal][index][value[0]] = pos/250  
-			self.case["metadata"][signal][index][value[1]] = (pos + size)/250
-		else:
-			self.case["metadata"][signal][index][value] = (pos + 0.5*size)/250
-		self._blockPlotting(False)
-		self.replot()
+		msg = "ROI has been moved successfully."
+		metaData = self.case["metadata"][signal][index]
+		rawData = self.case["data"][self.name]
+		try:
+			if Utility.isList(value):
+				if np.isnan(rawData[int(np.round(pos))]) or np.isnan(rawData[int(np.round(pos+size))]):
+					#What's moved? Values are being multiplied/divided by frequency, this might result in inaccuracy.
+					#Thus we have to check for biggest movement.
+					movement = {
+						"leftBorder": metaData[value[0]]*250 - pos,#Positive value: movement to the left.
+						"rightBorder": metaData[value[1]]*250 - (pos+size)#Negative value: movement to the right.
+					}
+					result = Utility.snapRoiIntoValidPosition(movement, metaData, rawData, pos, size)
+					msg = "ROI has been snapped back into graph."
+					self.case["metadata"][signal][index][result[0]] = result[1]/250
+				else:
+					self.case["metadata"][signal][index][value[0]] = pos/250  
+					self.case["metadata"][signal][index][value[1]] = (pos + size)/250
+			else:
+				if (value == 0 and np.isnan(rawData[int(np.round(pos))])) or (value == 1 and np.isnan(rawData[int(np.round(pos))])):
+					msg = "Cannot move ROI outside the graph."
+				#Er dette RegionROI med CircleROI?
+				elif self.name in ["s_ecg", "s_vent"] and (pos/250 <= metaData[0] or pos/250 >= metaData[-1]):
+					msg = "Cannot move CircleROI outside its RegionROI."
+				#Or is it a MinMaxROI?
+				elif self.name in ["s_CO2"]:
+					leftBorder = None
+					rightBorder = None
+					if value == 0: #Min/left circle.
+						rightBorder = metaData[-1]
+						if index == 0:
+							leftBorder = 0.0	
+						else:
+							leftBorder = self.case["metadata"][signal][index - 1][-1]
+					else: #Max/right circle
+						leftBorder = metaData[0]
+						if index == len(self.case["metadata"][signal]) - 1:
+							rightBorder = len(rawData) - 1
+						else:
+							rightBorder = self.case["metadata"][signal][index + 1][0]
+					if (pos+0.25*size)/250 < leftBorder or (pos-0.25*size)/250 > rightBorder:
+						msg = "Cannot move MinMaxROI past neighbouring points."
+					else:
+						self.case["metadata"][signal][index][value] = (pos + 0.5*size)/250
+				else:
+					self.case["metadata"][signal][index][value] = (pos + 0.5*size)/250
+		except Exception as e:
+			msg = str(e)
+		finally: 
+			self._emitRoiMessage(msg)
+			self._blockPlotting(False)
+			self.replot()
 
 	@qtc.pyqtSlot(bool)
 	def _blockPlotting(self, toBlock):
@@ -425,6 +470,7 @@ class GraphWidget(pg.PlotWidget):
 	@qtc.pyqtSlot(int)
 	def _removeEntry(self, index, signal):
 		self.case["metadata"][signal] = np.delete(self.case["metadata"][signal], index, 0)
+		self._emitRoiMessage("ROI has been removed successfully.")
 		self.replot()
 
 	@qtc.pyqtSlot(float)
@@ -441,10 +487,13 @@ class GraphWidget(pg.PlotWidget):
 				self.name, metaSignal, self.case, positionX, Utility.getRangeRatio(self.getViewBox())["sizeX"], 
 				self.getViewBox().state["viewRange"][0], self.getViewBox().boundingRect().width()
 				)
-			print(message)
+			self._emitRoiMessage(message)
 			self.replot()
 
 	@qtc.pyqtSlot(bool)
 	def _disableRoiMenu(self, disable):
 		#print("Sending block menu signal to CustomViewBox")
-		self.getViewBox().setRoiMenuEnabled(not disable)	
+		self.getViewBox().setRoiMenuEnabled(not disable)
+	
+	def _emitRoiMessage(self, msg, miliSeconds=5000):
+		self.sigRoiMessage.emit(msg, miliSeconds)

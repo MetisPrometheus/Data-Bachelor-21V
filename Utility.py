@@ -55,13 +55,32 @@ class Utility(object):
         yPixels = vb.boundingRect().height()
         yRatio = yDiff/yPixels
 
-        #For det meste så vil Y spennet være mindre enn X, så start med dette for å spare tid.
-        #Ikke sløs tid på å beregne diffY/diffY, heller.
-        if yRatio < xRatio:
-            ySize = yRatio*prefPixelSize
-            xSize = xRatio*prefPixelSize
-        else:
-            xSize = yRatio*prefPixelSize
-            ySize = xRatio*prefPixelSize
+        ySize = yRatio*prefPixelSize
+        xSize = xRatio*prefPixelSize
 
         return {"sizeX": xSize/np.log10(xDiff*0.05), "sizeY": ySize/np.log10(xDiff*0.05)}
+
+    @staticmethod
+    def snapRoiIntoValidPosition(movement, metaData, rawData, pos, size):
+		#Left RegionROI's handle moved/left MinMaxCircleROI moved.
+        if abs(movement["leftBorder"]) > abs(movement["rightBorder"]):
+            #Some ROIs are initiated outside of graph. Inform user to remove and position new one.
+            if np.isnan(rawData[int(np.round(metaData[0]*250))]):
+                raise Exception("ROI initiated outside of graph. Try removing it and placing a new one.")
+            elif movement["leftBorder"] > 0.0:
+                return [0, Utility._snapRoiMyIterator(pos, len(rawData) - 1, 1, rawData)]
+            elif movement["leftBorder"] < 0.0:
+                return [0, Utility._snapRoiMyIterator(pos, -1, -1, rawData)]
+        else:
+            if np.isnan(rawData[int(np.round(metaData[1]*250))]):
+                raise Exception("ROI initiated outside of graph. Try removing it and placing a new one.")
+            if movement["rightBorder"] > 0.0:
+                return [-1, Utility._snapRoiMyIterator(pos+size, len(rawData) - 1, 1, rawData)]
+            elif movement["rightBorder"] < 0.0:
+                return [-1, Utility._snapRoiMyIterator(pos+size, -1, -1, rawData)]
+
+    @staticmethod
+    def _snapRoiMyIterator(pos, startIndex, iteration, rawData):
+        for i in range(int(np.round(pos)), startIndex, iteration):
+            if not np.isnan(rawData[i]):
+                return i
