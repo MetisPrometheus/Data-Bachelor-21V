@@ -17,6 +17,7 @@ class MainWindow(qtw.QWidget):
 	graph_toggle = qtc.pyqtSignal(str, bool)
 	slider_incs_submitted = qtc.pyqtSignal(int)
 	span_submitted = qtc.pyqtSignal(int)
+	sigSaveMetadata = qtc.pyqtSignal(bool)
 	# overlay_submitted = qtc.pyqtSignal(bool, str)
 
 	settings = {}
@@ -39,7 +40,7 @@ class MainWindow(qtw.QWidget):
 		self.MW_GraphCollection.tags.x_submitted.connect(self.MW_GraphCollection.receiveTimelineXPos)
 
 		#Receive statusbar updates
-		# self.MW_Controls.test_signal.connect(self.setStatus) #Eksempel
+		self.MW_GraphCollection.sigStatusMessage.connect(self.setStatus) #Eksempel
 
 		# -------- Layouts --------
 		#Wrap a main_layout around the top-, body- and bottom part of the GUI
@@ -66,7 +67,8 @@ class MainWindow(qtw.QWidget):
 		self.graph_layout.addWidget(self.MW_GraphCollection)
 		self.graph_layout.addWidget(self.statusBar)
 		self.setLayout(self.main_layout)
-
+	
+	@qtc.pyqtSlot(str, float)
 	def setStatus(self, message, timer):
 		if self.statusBar.currentMessage() == "":
 			self.statusBar.show()
@@ -127,6 +129,7 @@ class MainWindow(qtw.QWidget):
 
 	def closeEvent(self, argv):
 		super().closeEvent(argv)
+		self.sigSaveMetadata(True)
 		print("||| Main Window (GUI) Closed |||")
 		self.MW_Controls.saveCheckboxStates()
 		self.MW_GraphCollection.saveDockState()
@@ -141,3 +144,7 @@ class MainWindow(qtw.QWidget):
 	def emitCheckboxState(self, signal, data):
 		state = signal.isChecked()
 		self.overlay_submitted.emit(state, data)
+
+	def emitSaveMetadata(self):
+		#Det kan tenkes at om endringer har blitt gjort, send True. False ellers.
+		self.sigSaveMetadata.emit(True)

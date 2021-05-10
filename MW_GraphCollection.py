@@ -21,6 +21,7 @@ class MW_GraphCollection(qtw.QWidget):
 	new_case_index = qtc.pyqtSignal(int)
 	slider_incs_submitted = qtc.pyqtSignal(int)
 	span_submitted = qtc.pyqtSignal(int)
+	sigStatusMessage = qtc.pyqtSignal(str, float)
 	
 	#Class Variables
 	span = 60
@@ -201,7 +202,8 @@ class MW_GraphCollection(qtw.QWidget):
 					self.dock_area.addDock(self.docks[signal], "bottom")
 				#Make a graph for every signal and assign them to their own docks
 				self.graphs[signal] = GraphWidget(signal)
-				self.graphs[signal].stopPlotting.connect(self.blockPlotting)
+				self.graphs[signal].stopPlotting.connect(self._blockPlotting)
+				self.graphs[signal].sigRoiMessage.connect(self._setStatusMessage)
 				self.graphs[signal].viewport().installEventFilter(self)
 				self.graphs[signal].getAxis("left").setWidth(w=25)
 				self.graphs[signal].setMouseEnabled(x=True, y=False)
@@ -291,5 +293,9 @@ class MW_GraphCollection(qtw.QWidget):
 		self.graphs[data].plotSection()
 	
 	@qtc.pyqtSlot(bool)
-	def blockPlotting(self, toBlock):
+	def _blockPlotting(self, toBlock):
 		self.stopPlot = toBlock
+
+	@qtc.pyqtSlot(str, float)
+	def _setStatusMessage(self, msg, miliSeconds):
+		self.sigStatusMessage.emit(msg, miliSeconds)

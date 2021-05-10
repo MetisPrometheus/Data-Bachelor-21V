@@ -220,81 +220,10 @@ class DataController(qtw.QWidget):
 			json.dump(self.settings, f)
 	#TODO: Disse kan kanskje legges til en egen statisk utility klasse?
 	
+	def saveMetadata(self, toSave):
+		if toSave:
+			print("Saving metadata files.")
+
 	def _prepDataset(self, dataset):
 		Utility.flattenVector(dataset)
 		Utility.array2NumpyArray(dataset)
-		
-"""Slett når programmet er ferdig.
-	def getMatData(self, new_case_index=False):
-		path_LP = f"{self.DATASET_FILEPATH}/{self.SUBSET1}"
-		path_BCP = f"{self.DATASET_FILEPATH}/{self.SUBSET2}"
-		case_files = self.getCaseNames()	
-		
-		#Store all the data from the first file or a specified one
-		if not new_case_index:
-			LP_data = loadmat(f"{path_LP}/{case_files[0]}")
-			BCP_data = loadmat(f"{path_BCP}/{case_files[0]}")
-			# self.filenames_submitted.emit(case_files) #Emit filenames to MainApp (Used for dropdown menu)
-		else: 
-			LP_data = loadmat(f"{path_LP}/{case_files[new_case_index]}")
-			BCP_data = loadmat(f"{path_BCP}/{case_files[new_case_index]}")
-
-		#Merge both dictionaries
-		data = {**LP_data["rec"], **BCP_data["rec"]}
-
-		#For loop to inspect dict hierarchy
-		# for key in data.keys():
-		# 	if isinstance(data[key], list):
-		# 		print("{} - arraylength: {}".format(key, len(data[key])))
-		# 	elif type(data[key]) == int:
-		# 		print("{} - value: {}".format(key, data[key]))
-
-		#Find the length of the longest list
-		max_length = len(data["s_ecg"])
-		for key in data.copy().keys():
-			if isinstance(data[key], list):
-				if (len(data[key]) >= max_length):
-					max_length = len(data[key])
-			else:
-				del data[key] #Remove non-lists from the dictionary
-
-		#Flatten lists from:   [[1], [3], [6], [2]]  --> [1,3,6,2]
-		for key, value in data.items():
-			data[key] = [item for sublist in value for item in sublist]
-
-		#Extends all lists to equal the longest one (for easier plotting)
-		for key, value in data.copy().items():
-			length = len(data[key])
-			diff = max_length - length
-			if diff > 0:
-				for i in range(0, diff):
-					data[key].append(float('nan'))
-
-		self.saveCheckboxStates(data.keys())
-		return data
-
-	def getCsvData(self, new_case_index=False):
-		pass
-
-	#Find and return case information from the original CSV case files
-	def getCaseInfo(self, new_case_index=False):
-		path = f"{self.DATASET_FILEPATH}/{self.CSV}"
-
-		if not new_case_index:
-			path = f"{path}/T1V_1.csv"
-		else:
-			path = f"{path}/T{new_case_index}V_1.csv"
-
-		info = {}
-		with open(path) as csv_file:
-			csv_info = [next(csv_file) for x in range(9)]
-
-		info["title"] = csv_info[0].replace("#","").replace("\n", "")
-		csv_info.pop(0)
-
-		for line in csv_info:
-			key = line.split(":", 1)[0].replace("#", "").replace(" ", "_").lower()
-			value = line.split(": ", 1)[1].replace("\n","")
-			info[key] = value
-		return info #dict
-"""
