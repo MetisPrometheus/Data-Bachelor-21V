@@ -194,6 +194,11 @@ class MW_GraphCollection(qtw.QWidget):
 				dock_name = signal.split("_")[-1].upper()
 				self.docks[signal] = Dock(f"{dock_name}")
 				self.dock_area.addDock(self.docks[signal], "bottom")
+				#Move the ecg signal to the top
+				if signal == "s_ecg":
+					self.dock_area.addDock(self.docks[signal], "top")
+				else:
+					self.dock_area.addDock(self.docks[signal], "bottom")
 				#Make a graph for every signal and assign them to their own docks
 				self.graphs[signal] = GraphWidget(signal)
 				self.graphs[signal].stopPlotting.connect(self.blockPlotting)
