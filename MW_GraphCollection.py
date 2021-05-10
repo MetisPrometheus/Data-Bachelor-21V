@@ -303,3 +303,7 @@ class MW_GraphCollection(qtw.QWidget):
 
 	def refreshTimeline(self, case):
 		self.tags._setTags(case)
+
+	def chooseTimeline(self, index):
+		if index == 0:
+			self.tags._setTags(self.case)
