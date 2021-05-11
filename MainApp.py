@@ -59,10 +59,6 @@ class MainApp(qtw.QApplication):
 
 		#Timeline stuff
 
-		''' (Emil/Sebbi)
-		# TODO: Get timeline names from datacontroller to populate the dropdown menu
-		self.data_controller.timelines_submitted.connect(self.main_window.receiveTimelines)
-		'''
 		#This signal is caught from MW_Controls when Add/Delete/Edit has been clicked
 		self.main_window.MW_Controls.request_timeline_window.connect(self.timeline_window.openWindow)
 		
@@ -71,10 +67,8 @@ class MainApp(qtw.QApplication):
 		self.main_window.MW_Controls.timeline_changed.connect(self.main_window.MW_GraphCollection.chooseTimeline)
 		#Send a signal from the timeline window back to MW_Controls to update the dropdown menu
 		self.timeline_window.timeline_submitted.connect(self.main_window.MW_Controls.updateTimelines)
-		''' (Emil/Sebbi)
-		#TODO: Send parameters ("Add", "Delete", "Edit") & (timeline_name) back to the datacontroller to update the saved timelines
-		self.timeline_window.timeline_submitted.connect(self.data_controller.updateTimelines)
-		'''
+
+
 		self.timeline_window.timeline_submitted.connect(self.main_window.updateTimelines)
  
 

@@ -126,7 +126,25 @@ class DataController(qtw.QWidget):
 
 		#Since this is the first case -> new_index = False (default value)
 		case = self.getCase()
-		
+
+	# def updateTimelines(self, option, timeline):
+	# 	empty_array = []
+	# 	if option == "Add":
+	# 		self.case["metadata"].update({timeline: empty_array})
+	# 		self.case["metadata"].update({"t_" + timeline: empty_array})
+	# 		# self.annotationsDataset[self.currentCase])
+	# 	elif option == "Delete":
+	# 		if timeline in self.case["metadata"]:
+	# 			self.case["metadata"].popitem()
+	# 			self.case["metadata"].popitem()
+	# 		else:
+	# 			print("This timeline does not exist.")
+	# 	elif option == "Edit":
+	# 		self.case["metadata"].update({timeline: empty_array})
+	# 		self.case["metadata"].update({"t_" + timeline: empty_array})
+
+	# 	print(self.case["metadata"])
+	# 	self.timeline_submitted.emit(self.case)
 
 
 	def getCaseNames(self):

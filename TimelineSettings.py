@@ -61,6 +61,8 @@ class TimelineSettings(qtw.QWidget):
 	def submit(self):
 		if len(self.input.text()) == 0:
 			self.label.setText("This field can't be left empty!")
+		elif self.input.text() == "Timeline 1":
+			self.label.setText("Can't make changes to this timeline.")
 		else:
 			print("self.option:",self.option, self.input.text())
 			self.timeline_submitted.emit(self.option, self.input.text())

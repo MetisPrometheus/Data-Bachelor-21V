@@ -307,3 +307,7 @@ class MW_GraphCollection(qtw.QWidget):
 	def chooseTimeline(self, index):
 		if index == 0:
 			self.tags._setTags(self.case)
+		else:
+			self.tags.clear()
+
+			

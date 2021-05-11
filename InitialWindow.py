@@ -20,17 +20,9 @@ class InitialWindow(qtw.QWidget):
 		print("--- Initial Window Created ---")
 		self.launch = qtw.QPushButton("Start", clicked=self.launchGUI)
 		self.button = qtw.QPushButton("Settings", clicked=self.requestDirectory)
-		#window title
 		self.setWindowTitle('Initial Window')
-		#self.setFixedSize(300,150)
-		#set text label
-		# self.setMaximumSize(300,200)
-		self.label = qtw.QLabel(self)
 
-		self.label.setText('Welcome to our program. If you are using it for the first time click the settings button.')
-		self.label.adjustSize()
 		self.setLayout(qtw.QVBoxLayout())
-		self.layout().addWidget(self.label)
 		self.layout().addWidget(self.launch)
 		self.layout().addWidget(self.button)
 
