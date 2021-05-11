@@ -31,13 +31,17 @@ class Utility(object):
     def equalizeLengthLists(dataset):
         maxLength = 0
         for key, value in dataset.items():
-            if Utility.isList(value) and key != "fs" and len(value) > maxLength:
-                maxLength = len(value)
+            if Utility.isList(value) and key != "fs":
+                length = Utility._findRealValue(len(value) - 1, 0, -1, value) + 1
+                value = value[:length]
+                dataset[key] = value
+                if len(value) > maxLength:
+                    maxLength = len(value)
 
         for key, value in dataset.items():
-            if Utility.isList(value) and key != "fs":
-                dataset[key] = np.pad(value, (0, maxLength - len(value)), "constant", constant_values=(0, np.inf))
-
+                if Utility.isList(value) and key != "fs":
+                    dataset[key] = np.pad(value, (0, maxLength - len(value)), "constant", constant_values=(0, np.inf))
+        
     #Check if list is a Python list or Numpy list.
     @staticmethod
     def isList(aList):
@@ -105,19 +109,19 @@ class Utility(object):
 
     @staticmethod
     def normalizeSignals(case):
-        #EKG
-        s_ecg = case["data"]["s_ecg"]
-        case["data"]["s_ecg"] = np.where(((s_ecg > 5) & (s_ecg < np.inf)) | (s_ecg < -5), 0, s_ecg)
-        #TTI: normal and vent
-        s_tti = case["data"]["s_imp"]
-        case["data"]["s_imp"] = np.where((np.isnan(s_tti)), 0, s_tti)
-        #PPG
-        s_ibp = case["data"]["s_ppg"]
-        case["data"]["s_ppg"] = np.where((np.isnan(s_ibp)) | (s_ibp < -10) | ((s_ibp > 300) & (s_ibp < np.inf)), 0, s_ibp)
         #CO2
         s_CO2 = case["data"]["s_CO2"]
         case["data"]["s_CO2"] = np.where((np.isnan(s_CO2)) | (s_CO2 < -5) | ((s_CO2 > 150) & (s_CO2 < np.inf)), 0, s_CO2)
-    
+        #PPG
+        s_ibp = case["data"]["s_ppg"]
+        case["data"]["s_ppg"] = np.where((np.isnan(s_ibp)) | (s_ibp < -10) | ((s_ibp > 300) & (s_ibp < np.inf)), 0, s_ibp)
+        #TTI: normal and vent
+        s_tti = case["data"]["s_imp"]
+        case["data"]["s_imp"] = np.where((np.isnan(s_tti)), 0, s_tti)
+        #EKG
+        s_ecg = case["data"]["s_ecg"]
+        case["data"]["s_ecg"] = np.where(((s_ecg > 5) & (s_ecg < np.inf)) | (s_ecg < -5), 0, s_ecg)    
+           
     @staticmethod
     def clearPadding(case):    
         #Set padding to NaN.

@@ -323,10 +323,9 @@ class MW_GraphCollection(qtw.QWidget):
 		self.case["data"]["s_CO2"], _ = Utility.displaceSignal(self.case["data"]["s_CO2"], newDisplacement, self.case["data"]["fs"])
 		self.case["metadata"]["t_CO2"] = displacement
 		Utility.equalizeLengthLists(self.case["data"])
-		#TODO: Ivar
-		##Grafer har fått endret deres lengder. Plott alt på nytt.
-		self.plotGraphs(self.case)
-		print(displacement)
+		Utility.normalizeSignals(self.case)
+		Utility.clearPadding(self.case)
+		self.getGraph("s_CO2").replot()
 
 	@qtc.pyqtSlot(int)
 	def displaceBCG(self, displacement):
@@ -336,7 +335,7 @@ class MW_GraphCollection(qtw.QWidget):
 		self.case["data"]["s_bcg2"], _ = Utility.displaceSignal(self.case["data"]["s_bcg2"], newDisplacement, self.case["data"]["fs"])
 		self.case["metadata"]["t_bcg"] = displacement
 		Utility.equalizeLengthLists(self.case["data"])
-		#TODO: Ivar
-		##Grafer har fått endret deres lengder. Plott alt på nytt.
-		self.plotGraphs(self.case)
-		print(displacement)
+		Utility.normalizeSignals(self.case)
+		Utility.clearPadding(self.case)
+		self.getGraph("s_bcg1").replot()
+		self.getGraph("s_bcg2").replot()
