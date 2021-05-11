@@ -6,6 +6,9 @@ from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
 from PyQt5 import QtGui as qtg
 
+#Import local resources (images)
+import resources
+
 class MW_Controls(qtw.QWidget):
 
 	request_timeline_window = qtc.pyqtSignal(str, str)
@@ -56,11 +59,11 @@ class MW_Controls(qtw.QWidget):
 		self.dropdown_timelines = qtw.QComboBox(currentIndexChanged=self.changeTimeline)
 		self.dropdown_timelines.insertItems(0, ["Timeline 1", "Timeline 2", "Timeline 3"])
 
-		add_icon = qtg.QIcon(qtg.QPixmap("add.png"))
+		add_icon = qtg.QIcon(qtg.QPixmap(":/images/add.png"))
 		self.add_timeline = qtw.QPushButton(icon=add_icon, clicked=lambda:self.requestTimelineSettings("Add"))
-		remove_icon = qtg.QIcon(qtg.QPixmap("remove.png"))
+		remove_icon = qtg.QIcon(qtg.QPixmap(":/images/remove.png"))
 		self.remove_timeline= qtw.QPushButton(icon=remove_icon, clicked=lambda:self.requestTimelineSettings("Delete"))
-		edit_icon = qtg.QIcon(qtg.QPixmap("edit.png"))
+		edit_icon = qtg.QIcon(qtg.QPixmap(":/images/edit.png"))
 		self.edit_timeline = qtw.QPushButton(icon=edit_icon, clicked=lambda:self.requestTimelineSettings("Edit"))
 
 		self.checkboxes = {}
