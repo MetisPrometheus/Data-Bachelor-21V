@@ -250,12 +250,15 @@ class MW_GraphCollection(qtw.QWidget):
 		#After plotting new cases set the slider value back to 0
 		self.slider.setValue(0)
 	
-	#Executes when the program is closed and will save the order of the graphs
+	#Executes when the program is closed and will save the order of the graphs in settings.txt
 	def saveDockState(self):
 		state = self.dock_area.saveState()
+		dock_sizes = state["main"][2]["sizes"]
+		state["main"][2]["sizes"] = [100 for element in dock_sizes]
 		self.settings["dockstate"] = state
 		with open("settings.txt", "w") as f:
 			json.dump(self.settings, f)
+		print("***The order of the graphs have been saved")
 
 	def _normalizeSignals(self, case):
 		#EKG
