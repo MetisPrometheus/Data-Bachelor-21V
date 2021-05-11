@@ -38,7 +38,9 @@ class MW_Controls(qtw.QWidget):
 		self.co2_label = qtw.QLabel("CO2:")
 		self.co2_label.setFixedWidth(25)
 		self.co2_input = qtw.QLineEdit(returnPressed=self.co2InputEntered)
-		self.co2_input.setValidator(qtg.QDoubleValidator())
+		self.double_validator = qtg.QDoubleValidator(bottom=0, top=2, decimals=3)
+		self.double_validator.setNotation(qtg.QDoubleValidator.StandardNotation)
+		self.co2_input.setValidator(self.double_validator)
 		self.co2_input.setFixedWidth(25)
 
 		self.bcg_label = qtw.QLabel("BCG:")
@@ -109,7 +111,8 @@ class MW_Controls(qtw.QWidget):
 	def co2InputEntered(self):
 		number = float(self.co2_input.text())
 		self.co2_input.setText(str(number))
-		if -1.5 <= number <= 1.5:
+		if 0 <= number <= 2:
+			print("CO2 input successfully emitted")
 			self.co2 = number
 			self.co2_input_submitted.emit(number)
 		else:
@@ -121,6 +124,7 @@ class MW_Controls(qtw.QWidget):
 		number = int(self.bcg_input.text())
 		self.bcg_input.setText(str(number))
 		if number >= 0:
+			print("bcg input successfully emitted")
 			self.bcg = number
 			self.bcg_input_submitted.emit(number)
 		else:
