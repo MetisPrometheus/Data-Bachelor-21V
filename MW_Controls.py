@@ -61,11 +61,14 @@ class MW_Controls(qtw.QWidget):
 		self.dropdown_timelines.insertItems(0, ["Timeline 1", "Timeline 2", "Timeline 3"])
 
 		add_icon = qtg.QIcon(qtg.QPixmap(":/images/add.png"))
-		self.add_timeline = qtw.QPushButton(icon=add_icon, clicked=lambda:self.requestTimelineSettings("Add"))
+		self.add_timeline = qtw.QPushButton(icon=add_icon, clicked=lambda:self.requestTimelineSettings("Add"), objectName="addBtn")
+		self.add_timeline.setFixedWidth(60) #22 for a tight fit
 		remove_icon = qtg.QIcon(qtg.QPixmap(":/images/remove.png"))
-		self.remove_timeline= qtw.QPushButton(icon=remove_icon, clicked=lambda:self.requestTimelineSettings("Delete"))
+		self.remove_timeline= qtw.QPushButton(icon=remove_icon, clicked=lambda:self.requestTimelineSettings("Delete"), objectName="deleteBtn")
+		self.remove_timeline.setFixedWidth(60) #22 for a tight fit
 		edit_icon = qtg.QIcon(qtg.QPixmap(":/images/edit.png"))
-		self.edit_timeline = qtw.QPushButton(icon=edit_icon, clicked=lambda:self.requestTimelineSettings("Edit"))
+		self.edit_timeline = qtw.QPushButton(icon=edit_icon, clicked=lambda:self.requestTimelineSettings("Edit"), objectName="editBtn")
+		self.edit_timeline.setFixedWidth(60) #22 for a tight fit
 
 		self.checkboxes = {}
 		self.checkboxes["s_ecg"] = qtw.QCheckBox("ECG (mV)", clicked=lambda:self.emitCheckboxState("s_ecg"))
@@ -74,6 +77,8 @@ class MW_Controls(qtw.QWidget):
 		self.checkboxes["s_vent"] = qtw.QCheckBox("TTI (\u03A9)", clicked=lambda:self.emitCheckboxState("s_vent"))
 		self.checkboxes["s_bcg1"] = qtw.QCheckBox("BCG1 (V)", clicked=lambda:self.emitCheckboxState("s_bcg1"))
 		self.checkboxes["s_bcg2"] = qtw.QCheckBox("BCG1 (V)", clicked=lambda:self.emitCheckboxState("s_bcg2"))
+		for key, obj in self.checkboxes.items():
+			self.checkboxes[key].setFixedWidth(100)
 
 		self.check_layout = qtw.QHBoxLayout()
 		self.check_layout.addWidget(self.checkboxes["s_ecg"])
@@ -98,8 +103,8 @@ class MW_Controls(qtw.QWidget):
 
 		self.dropdown_layout.addWidget(self.dropdown_timelines)
 		self.dropdown_layout.addWidget(self.add_timeline)
-		self.dropdown_layout.addWidget(self.remove_timeline)
 		self.dropdown_layout.addWidget(self.edit_timeline)
+		self.dropdown_layout.addWidget(self.remove_timeline)
 
 		self.top_layout = qtw.QHBoxLayout()
 		self.top_layout.addLayout(self.dropdown_layout)
@@ -115,18 +120,19 @@ class MW_Controls(qtw.QWidget):
 	def co2InputEntered(self):
 		number = qtc.QLocale().toDouble(self.co2_input.text())[0]
 		self.co2_input.setText(qtc.QLocale().toString(number))
+		print(f"The user has entered value: {number} in the co2 input field")
 		if 0 <= number <= 2:
 			print("CO2 input successfully emitted")
 			self.co2 = number
 			self.co2_input_submitted.emit(number)
 		else:
 			self.co2_input.setText(f"{self.co2}")
-			self.console_msg_submitted.emit("Invalid CO2 value submitted. Allowed values are between -1.5 to 1.5.", 5000)
-		print(f"The user has entered value: {number} in the co2 input field")
+			self.console_msg_submitted.emit("Invalid CO2 value submitted. Allowed values are between 0 and 2.", 5000)
 
 	def bcgInputEntered(self):
 		number = int(self.bcg_input.text())
 		self.bcg_input.setText(str(number))
+		print(f"The user has entered value: {number} in the bcg input field")
 		if 0 <= number <= 1000:
 			print("bcg input successfully emitted")
 			self.bcg = number
@@ -134,7 +140,6 @@ class MW_Controls(qtw.QWidget):
 		else:
 			self.bcg_input.setText(f"{self.bcg}")
 			self.console_msg_submitted.emit("Invalid BCG value submitted. Only positive integers allowed.", 5000)
-		print(f"The user has entered value: {number} in the bcg input field")
 
 	def emitRoiCheckboxState(self, signal, data):
 		state = signal.isChecked()

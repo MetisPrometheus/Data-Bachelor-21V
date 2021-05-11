@@ -67,10 +67,31 @@ class MainApp(qtw.QApplication):
 		#Send a signal from the timeline window back to MW_Controls to update the dropdown menu
 		self.timeline_window.timeline_submitted.connect(self.main_window.MW_Controls.updateTimelines)
 
-
 		self.timeline_window.timeline_submitted.connect(self.main_window.updateTimelines)
  
 
+#Limited styling possible. Check reference list for specifics -> https://doc.qt.io/qt-5/stylesheet-reference.html
+stylesheet = """
+/*#launchBtn, #directoryBtn {
+	background-color: lightblue;
+	border-style: outset;
+	border-width: 1px;
+	border-radius: 5px;
+	border-color: black;
+	padding: 10px;
+}*/
+
+#statusBar {
+	background-color: lightblue;
+}
+
+#addBtn, #deleteBtn, #editBtn {
+	padding: 2px;
+	margin: 0px;
+}
+"""
+
 if __name__ == "__main__":
 	app = MainApp(sys.argv)	
+	app.setStyleSheet(stylesheet)
 	sys.exit(app.exec())

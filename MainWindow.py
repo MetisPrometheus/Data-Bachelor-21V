@@ -26,6 +26,8 @@ class MainWindow(qtw.QWidget):
 	def __init__(self):
 		super().__init__()
 		print("--- Main Window (GUI) Created ---")
+		self.setObjectName("mainWindow") #For styling
+		
 		# -------- Main Window Sections --------
 		self.MW_Controls = MW_Controls()
 		self.MW_GraphCollection = MW_GraphCollection()
@@ -51,7 +53,7 @@ class MainWindow(qtw.QWidget):
 		self.graph_layout = qtw.QVBoxLayout()
 		self.left_bar_layout = qtw.QVBoxLayout()
 
-		self.statusBar = qtw.QStatusBar()
+		self.statusBar = qtw.QStatusBar(objectName="statusBar")
 		self.statusBar.hide()
 		
 		self.main_layout.addLayout(self.left_bar_layout)

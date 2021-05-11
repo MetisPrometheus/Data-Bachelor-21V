@@ -1,10 +1,12 @@
 #Standard Libraries
 import os
 import json
+import math
 
 #3rd Party Libraries
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
+from PyQt5 import QtGui as qtg
 
 
 class InitialWindow(qtw.QWidget):
@@ -18,13 +20,37 @@ class InitialWindow(qtw.QWidget):
 	def __init__(self):
 		super().__init__()
 		print("--- Initial Window Created ---")
-		self.launch = qtw.QPushButton("Start", clicked=self.launchGUI)
-		self.button = qtw.QPushButton("Settings", clicked=self.requestDirectory)
-		self.setWindowTitle('Initial Window')
+		self.setWindowTitle(" ")
+		self.setObjectName("initialWindow") #For styling
+
+		self.startBtn = qtw.QPushButton("Start", clicked=self.launchGUI, objectName="launchBtn")
+		# self.startBtn.setFixedHeight(80)
+		# self.startBtn.setFixedWidth(150)
+		self.directoryBtn = qtw.QPushButton("Select\nDirectories", clicked=self.requestDirectory, objectName="directoryBtn")
+		# self.directoryBtn.setFixedHeight(80)
+		# self.directoryBtn.setFixedWidth(150)
 
 		self.setLayout(qtw.QVBoxLayout())
-		self.layout().addWidget(self.launch)
-		self.layout().addWidget(self.button)
+		self.layout().addWidget(self.startBtn)
+		self.layout().addWidget(self.directoryBtn)
+		self.initializeWindowSize()
+
+	def initializeWindowSize(self):
+			desktop_screen = qtw.QDesktopWidget().screenGeometry(-1)
+			screen_width = desktop_screen.width()
+			screen_heigth = desktop_screen.height()
+			gui_width = 200
+			gui_height = 200
+			gui_left = math.floor((screen_width-gui_width)/3.3)
+			gui_top = math.floor((screen_heigth-gui_height)/3.3)
+
+			#Enter new QRect values
+			desktop_screen.setWidth(gui_width)
+			desktop_screen.setHeight(gui_height)
+			desktop_screen.moveLeft(gui_left)
+			desktop_screen.moveTop(gui_top)
+			self.setGeometry(desktop_screen)
+			self.setFixedSize(self.size())
 
 	def launchGUI(self):
 		if "settings.txt" in next(os.walk(os.getcwd()))[2]:

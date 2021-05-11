@@ -17,6 +17,7 @@ class TimelineSettings(qtw.QWidget):
 	def __init__(self):
 		super().__init__()
 		print("--- Timeline Window Created ---")
+		self.setWindowTitle(" ")
 
 		self.label = qtw.QLabel()
 
