@@ -306,10 +306,10 @@ class GraphWidget(pg.PlotWidget):
 		xEnd = self.getViewBox().state["viewRange"][0][1]
 
 		for i in range(len(t_cap)):
-			nMin = (t_cap[i][0])*self.frequency
+			nMin = (t_cap[i][0] + t_CO2)*self.frequency
 			nMinIndeks = int(np.round(nMin))
 			#t_min.append(item[0] + t_CO2)
-			nMax = (t_cap[i][1])*self.frequency
+			nMax = (t_cap[i][1] + t_CO2)*self.frequency
 			nMaxIndeks = int(np.round(nMax))
 			#t_max.append(item[1] + t_CO2)
 			if nMin <= xEnd and nMin >= xStart:
@@ -379,7 +379,7 @@ class GraphWidget(pg.PlotWidget):
 	def _addPoint(self, dataSignal, metaSignal, index, xPoint, sizeX, xPointIndeks, sizeY, isRemovable, penColour):
 		myCircle = PointROI(
 			self.case["metadata"][metaSignal], index, self.getViewBox().state["viewRange"],
-			(xPoint - sizeX*.5, self.case["data"][dataSignal][xPointIndeks] - sizeY*.5), (sizeX, sizeY),
+			pg.Point(xPoint - sizeX*.5, self.case["data"][dataSignal][xPointIndeks] - sizeY*.5), (sizeX, sizeY),
 			removable=isRemovable, pen=penColour
 			)
 		self.addItem(myCircle)
@@ -388,8 +388,8 @@ class GraphWidget(pg.PlotWidget):
 	def _addPointMinMax(self, dataSignal, metaSignal, index, xPoint, sizeX, xPointIndeks, sizeY, isRemovable, penColour):
 		myCircle = PointROIMinMax(
 			self.case["metadata"][metaSignal], index, self.getViewBox().state["viewRange"],
-			(xPoint - sizeX*.5, self.case["data"][dataSignal][xPointIndeks] - sizeY*.5), (sizeX, sizeY),
-			removable=isRemovable, pen=penColour
+			pg.Point(xPoint - sizeX*.5, self.case["data"][dataSignal][xPointIndeks] - sizeY*.5), 
+			self.case["metadata"]["t_CO2"]*250,	(sizeX, sizeY),	removable=isRemovable, pen=penColour
 			)
 		self.addItem(myCircle)
 		self._connectSignals(myCircle, metaSignal, index[1])
@@ -434,22 +434,27 @@ class GraphWidget(pg.PlotWidget):
 				elif self.name in ["s_CO2"]:
 					leftBorder = None
 					rightBorder = None
+					delay = self.case["metadata"]["t_CO2"]
 					if value == 0: #Min/left circle.
 						rightBorder = metaData[-1]
+						rightBorder += delay
 						if index == 0:
 							leftBorder = 0.0	
 						else:
 							leftBorder = self.case["metadata"][signal][index - 1][-1]
+							leftBorder += delay
 					else: #Max/right circle
 						leftBorder = metaData[0]
+						leftBorder += delay
 						if index == len(self.case["metadata"][signal]) - 1:
 							rightBorder = len(rawData) - 1
 						else:
 							rightBorder = self.case["metadata"][signal][index + 1][0]
+							rightBorder += delay
 					if (pos)/250 < leftBorder or (pos)/250 > rightBorder:
 						msg = "Cannot move MinMaxROI past neighbouring points."
 					else:
-						self.case["metadata"][signal][index][value] = (pos)/250
+						self.case["metadata"][signal][index][value] = (pos)/250 - delay
 				else:
 					self.case["metadata"][signal][index][value] = (pos)/250
 		except Exception as e:

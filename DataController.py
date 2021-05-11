@@ -99,9 +99,6 @@ class DataController(qtw.QWidget):
 		ts = time()
 		self.annotationsDataset = Utility.convertMatToPickle(self.ANNOTATIONS_FILEPATH, self.SUBSET_ANNOTATIONS, "metadata")
 		print("Loading metadata took " + str(time() - ts) + " seconds.")
-
-		#Assigning correct variables to each case from metadata.mat
-		
 		
 		#Make a list of case names from the metadata file and sort them for indexing.
 		self.CASE_NAMES = list(self.annotationsDataset.keys())
@@ -141,30 +138,19 @@ class DataController(qtw.QWidget):
 		self.currentCase = self.getCaseNames()[new_case_index]
 		caseName = self.getCaseNames()[new_case_index]
 
-		#LP15
-		ts = time()
+		#CaseData
 		datasetLP15 = Utility.convertMatToPickle(self.DATASET_FILEPATH, self.SUBSET_LP15, caseName)
-		print("Loading LP15 case file took " + str(time() - ts) + " seconds.")
-
-		#BCG
-		ts = time()
 		datasetBCG = Utility.convertMatToPickle(self.DATASET_FILEPATH, self.SUBSET_BCG, caseName)
-		print("Loading BCG case file took " + str(time() - ts) + " seconds.")
-
-		ts = time()
 		datasetAnnotations = self.annotationsDataset[caseName]
-
-		#Alt dette gjøres tidligere nå.
-		#self._prepDataset(datasetLP15)
-		#self._prepDataset(datasetBCG)
-		#self._prepDataset(datasetAnnotations)
 
 		case["data"] = datasetLP15
 		case["data"].update(datasetBCG)
-		Utility.equalizeLengthLists(case["data"])
 		case["metadata"] = datasetAnnotations
-		print("Adding metadata to local variable, prepping all datasets and creating case file took " + str(time() - ts) + " seconds.")
-		
+		case["data"]["s_bcg1"], bcg1Displacement = Utility.displaceSignal(case["data"]["s_bcg1"], case["metadata"]["t_bcg"], case["data"]["fs"])
+		case["data"]["s_bcg2"], bcg2Displacement = Utility.displaceSignal(case["data"]["s_bcg2"], case["metadata"]["t_bcg"], case["data"]["fs"])
+		case["data"]["s_CO2"], CO2Displacement = Utility.displaceSignal(case["data"]["s_CO2"], case["metadata"]["t_CO2"], case["data"]["fs"])
+		Utility.equalizeLengthLists(case["data"])
+
 		#TODO: Denne er vel ikke nødvendig lenger?
 		case["new_index"] = new_case_index
 		
@@ -173,7 +159,6 @@ class DataController(qtw.QWidget):
 
 		#Pass along the settings received from 
 		case["settings"] = self.settings
-		print("Size of case dictionary is " + str((sys.getsizeof(case) / 2**10)) + "KBs.")
 		#Submit the case to the mainwindow for the GUI to be created using the data provided
 		self.case_submitted.emit(case)
 
@@ -186,16 +171,10 @@ class DataController(qtw.QWidget):
 					self.settings["checkboxes"][element] = True
 			#Save the settings to a txt.file in JSON format located in the same directory as the .exe file
 			json.dump(self.settings, f)
-	#TODO: Disse kan kanskje legges til en egen statisk utility klasse?
 	
 	def saveMetadata(self, toSave):
 		if toSave:
-			print("Saving metadata files.")
 			Utility.savePickleFile(
 				self.ANNOTATIONS_FILEPATH, self.SUBSET_ANNOTATIONS, 
 				str(datetime.now()).replace(":", "-").replace(" ", "") + "metadata", self.annotationsDataset
 				)
-
-	def _prepDataset(self, dataset):
-		Utility.flattenVector(dataset)
-		Utility.array2NumpyArray(dataset)

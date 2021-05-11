@@ -48,23 +48,23 @@ class AddROI(object):
     def _addMinMaxCircleROIs(rawSignal, metaSignal, case, pos, sizeX):
         rawSignalList = case["data"][rawSignal]
         metaSignalList = case["metadata"][metaSignal]*250
-        
+        delay = case["metadata"]["t_CO2"]
         if (
             (pos - 2*sizeX >= 0.0 and not np.isnan(rawSignalList[int(np.round(pos - 2*sizeX))])) and 
-            (pos + 2*sizeX <= len(rawSignalList) and not np.isnan(rawSignalList[int(np.round(pos + 2*sizeX))]))
+            (pos + 2*sizeX <= len(rawSignalList) and not np.isnan(rawSignalList[int(np.ceil(pos + 2*sizeX))]))
             ):
             #Check for empty list since this requires special attention, i.e. initiating list.
             if len(metaSignalList) == 0:
                 case["metadata"][metaSignal] = np.empty([1, 2])
-                case["metadata"][metaSignal][0] = (pos-sizeX)/250
-                case["metadata"][metaSignal][-1] = (pos+sizeX)/250
+                case["metadata"][metaSignal][0] = (pos-sizeX)/250 - delay
+                case["metadata"][metaSignal][-1] = (pos+sizeX)/250 - delay
                 return "Roi Successfully added!"
             else:
                 result = AddROI._calculatePosition(rawSignalList, metaSignalList, pos, sizeX)
                 if "pos" in result and "myIndex" in result:
                     pos = result["pos"]
                     myIndex = result["myIndex"]
-                    case["metadata"][metaSignal] = np.insert(case["metadata"][metaSignal], myIndex, [(pos - sizeX)/250, (pos + sizeX)/250], axis=0)
+                    case["metadata"][metaSignal] = np.insert(case["metadata"][metaSignal], myIndex, [(pos - sizeX)/250 - delay, (pos + sizeX)/250 - delay], axis=0)
                 return result["msg"]
         else:
             return "Can't add ROIs outside of graph."

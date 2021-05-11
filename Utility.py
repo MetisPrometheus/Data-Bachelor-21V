@@ -45,10 +45,13 @@ class Utility(object):
             return True
         else:
             return False
-
+    
+    #Setting limit of displacement to 200s by default.
     @staticmethod
-    def displaceSignal(aList, seconds, frequency):
-        return np.pad(aList, (int(seconds*frequency), 0), "constant", constant_values=(np.nan, 0))
+    def displaceSignal(aList, seconds, frequency, limit=200):
+        finalDisplacement = int(min(limit*frequency, seconds*frequency))
+        resultList = np.pad(aList, (finalDisplacement, 0), "constant", constant_values=(np.nan, 0))
+        return [resultList, finalDisplacement]
 
     @staticmethod
     def convertMatToPickle(datasetFilepath, subsetFilepath, fileName):
@@ -147,19 +150,19 @@ class Utility(object):
             if np.isnan(rawData[int(np.round(metaData[0]*250))]):
                 raise Exception("ROI initiated outside of graph. Try removing it and placing a new one.")
             elif movement["leftBorder"] > 0.0:
-                return [0, Utility._snapRoiMyIterator(pos, len(rawData) - 1, 1, rawData)]
+                return [0, Utility._findRealValue(pos, len(rawData) - 1, 1, rawData)]
             elif movement["leftBorder"] < 0.0:
-                return [0, Utility._snapRoiMyIterator(pos, -1, -1, rawData)]
+                return [0, Utility._findRealValue(pos, -1, -1, rawData)]
         else:
             if np.isnan(rawData[int(np.round(metaData[1]*250))]):
                 raise Exception("ROI initiated outside of graph. Try removing it and placing a new one.")
             if movement["rightBorder"] > 0.0:
-                return [-1, Utility._snapRoiMyIterator(pos+size, len(rawData) - 1, 1, rawData)]
+                return [-1, Utility._findRealValue(pos+size, len(rawData) - 1, 1, rawData)]
             elif movement["rightBorder"] < 0.0:
-                return [-1, Utility._snapRoiMyIterator(pos+size, -1, -1, rawData)]
+                return [-1, Utility._findRealValue(pos+size, -1, -1, rawData)]
 
     @staticmethod
-    def _snapRoiMyIterator(pos, startIndex, iteration, rawData):
+    def _findRealValue(pos, startIndex, iteration, rawData):
         for i in range(int(np.round(pos)), startIndex, iteration):
             if not np.isnan(rawData[i]):
                 return i

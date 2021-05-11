@@ -6,7 +6,6 @@ import os
 import pyqtgraph as pg
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtCore as qtc
-from mat4py import loadmat
 
 #Local Classes
 from MainWindow import MainWindow

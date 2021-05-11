@@ -1,0 +1,7 @@
+pickle-mixin
+pyqt5
+pyqtgraph
+mat4py
+numpy
+json
+vispy

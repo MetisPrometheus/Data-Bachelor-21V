@@ -25,13 +25,15 @@ class PointROI(pg.EllipseROI):
     index = None
     maxBounds = None
     
-    def __init__(self, caseArray, index, viewRange, pos, size=None, radius=None, **args):
+    def __init__(self, caseArray, index, viewRange, pos, size=None, radius=None, delay=0.0, **args):
         if size is None:
             if radius is None:
                 raise TypeError("Must provide either size or radius.")
             size = (radius*2, radius*2)
         self.caseArray = caseArray
         self.index = index
+        self.delay = delay
+        
         pg.EllipseROI.__init__(self, pos, size, resizable=False, rotatable=False, **args)
         self.aspectLocked = True
         self.maxBounds = {}
@@ -97,7 +99,7 @@ class PointROI(pg.EllipseROI):
         self.setPos(newState['pos'], update=update, finish=finish)
 
     def stateChangeFinished(self):
-        self.sigRegionChangeFinished.emit(self.index, self.getState()["pos"].x(), self.getState()["size"].x())
+        self.sigRegionChangeFinished.emit(self.index, self.getState()["pos"].x() - self.delay, self.getState()["size"].x())
 
     def hoverEvent(self, ev):
         hover = False
