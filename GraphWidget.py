@@ -321,15 +321,15 @@ class GraphWidget(pg.PlotWidget):
 			for i in range(len(t_anns)):
 				if t_anns[i]*self.frequency >= self.x_start and t_anns[i]*self.frequency <= self.x_end:
 					if i == 0:
-						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=anns[i], pen=pg.mkPen('g', width=2), labelOpts={'color': 'w', 'position': 0.7, 'fill': 'g'}))
+						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=anns[i], pen=pg.mkPen('g', width=2), labelOpts={'color': 'w', 'position': 0.88, 'fill': 'g'}))
 					elif i == (len(t_anns)-1):
-						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=anns[i], pen=pg.mkPen('r', width=2), labelOpts={'color': 'w', 'position': 0.7, 'fill': 'r'}))
+						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=anns[i], pen=pg.mkPen('r', width=2), labelOpts={'color': 'w', 'position': 0.88, 'fill': 'r'}))
 					else:
 						if anns[i] in self.LPcodes_translations:
 							label = self.LPcodes_translations[anns[i]]
 						else:
 							label = anns[i]
-						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=label, pen=pg.mkPen('b', width=2), labelOpts={'color': 'w', 'position': 0.7, 'fill': 'b'}))
+						self.addItem(pg.InfiniteLine(pos=t_anns[i]*self.frequency, label=label, pen=pg.mkPen('b', width=2), labelOpts={'color': 'w', 'position': 0.88, 'fill': 'b'}))
 		else:
 			print("Something went wrong. (The vectors anns and t_anns are not the same length)")
 
