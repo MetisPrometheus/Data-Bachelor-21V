@@ -46,7 +46,7 @@ class MW_Controls(qtw.QWidget):
 		self.bcg_label = qtw.QLabel("BCG:")
 		self.bcg_label.setFixedWidth(25)
 		self.bcg_input = qtw.QLineEdit(returnPressed=self.bcgInputEntered)
-		self.bcg_input.setValidator(qtg.QIntValidator())
+		self.bcg_input.setValidator(qtg.QIntValidator(bottom=0, top=100000))
 		self.bcg_input.setFixedWidth(25)
 
 		self.roi_checkbox1 = qtw.QCheckBox("QRS", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox1, 's_ecg'))
@@ -123,7 +123,7 @@ class MW_Controls(qtw.QWidget):
 	def bcgInputEntered(self):
 		number = int(self.bcg_input.text())
 		self.bcg_input.setText(str(number))
-		if number >= 0:
+		if 0 <= number <= 100000:
 			print("bcg input successfully emitted")
 			self.bcg = number
 			self.bcg_input_submitted.emit(number)
