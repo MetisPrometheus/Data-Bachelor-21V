@@ -39,9 +39,6 @@ class GraphWidget(pg.PlotWidget):
 	#vent_submitted = False
 	#co2_submitted = False
 
-	MAX_X_RANGE = 50000
-	MIN_X_RANGE = 100
-
 	AnnotatedGraphs = {
 		"s_ecg": False,
 		"s_vent": False,
@@ -68,9 +65,6 @@ class GraphWidget(pg.PlotWidget):
 			self.getViewBox().sigAddRoiRequest.connect(self._addROI)
 		else:
 			super().__init__()
-
-		# self.setXRange(10000, 30000, 0.05)
-		self.setLimits(xMin=-500, minXRange=self.MIN_X_RANGE, maxXRange=self.MAX_X_RANGE)
 
 		# axis = pg.DateAxisItem()
 		# self.setAxisItems({"bottom": axis})
