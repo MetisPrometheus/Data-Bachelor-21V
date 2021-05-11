@@ -3,6 +3,12 @@
 
 #3rd party libraries
 import numpy as np
+from mat4py import loadmat
+try:
+	import cPickle as pickle
+except ImportError:
+	import pickle
+
 
 class Utility(object):
 
@@ -39,6 +45,56 @@ class Utility(object):
             return True
         else:
             return False
+
+    @staticmethod
+    def displaceSignal(aList, seconds, frequency):
+        return np.pad(aList, (int(seconds*frequency), 0), "constant", constant_values=(np.nan, 0))
+
+    @staticmethod
+    def convertMatToPickle(datasetFilepath, subsetFilepath, fileName):
+        try:
+            with open(datasetFilepath + subsetFilepath + "Pickle/" + fileName + ".p", "rb") as fp:
+                dataset = pickle.load(fp)
+                if "fullFile" in dataset and dataset["fullFile"] == True:
+                    dataset.pop("fullFile")
+                    print(subsetFilepath + " loaded with pickle.")
+                    return dataset
+                else:
+                    raise Exception("Pickle file corrupted.")
+        except (IOError, Exception) as e:
+            print(e)
+            #Selve metadata.mat filen krever annen håndtering, da denne inneholder data fra alle tilfeller.
+            if fileName == "metadata":
+                annotationsDataset = loadmat(datasetFilepath + subsetFilepath + "metadata.mat").get("metadata")
+                dataset = {}
+                for i in range(len(annotationsDataset) - 1):
+                    key = annotationsDataset["reg_name"][i]
+                    newDict = dict()
+                    for k in annotationsDataset:
+                        if k == "reg_name":
+                            continue
+                        newDict.update({k: annotationsDataset[k][i]})
+                    dataset.update({key: newDict})
+                    Utility.flattenVector(dataset[key])
+                    Utility.array2NumpyArray(dataset[key])
+                return Utility.savePickleFile(datasetFilepath, subsetFilepath, fileName, dataset)
+            else:
+                dataset = loadmat(datasetFilepath + subsetFilepath + "MAT/" + fileName + ".mat").get("rec")
+                Utility.flattenVector(dataset)
+                Utility.array2NumpyArray(dataset)
+                return Utility.savePickleFile(datasetFilepath, subsetFilepath, fileName, dataset)
+    
+    @staticmethod
+    def savePickleFile(datasetFilepath, subsetFilepath, fileName, dataset):
+        try:
+            with open(datasetFilepath + subsetFilepath + "Pickle/" + fileName + ".p", "wb") as fp:
+                dataset["fullFile"] = True
+                pickle.dump(dataset, fp, protocol=pickle.HIGHEST_PROTOCOL)
+                dataset.pop("fullFile")
+                return dataset
+        except IOError as e:
+            print(e)
+            return dataset
 
     @staticmethod
     def normalizeSignals(case):

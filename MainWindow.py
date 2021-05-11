@@ -124,7 +124,7 @@ class MainWindow(qtw.QWidget):
 
 	def closeEvent(self, argv):
 		super().closeEvent(argv)
-		self.sigSaveMetadata(True)
+		self.emitSaveMetadata()
 		print("||| Main Window (GUI) Closed |||")
 		self.MW_Controls.saveCheckboxStates()
 		self.MW_GraphCollection.saveDockState()

@@ -1,19 +1,12 @@
 #Standard Libraries
 import os
 import json
-try:
-	import cPickle as pickle
-except ImportError:
-	import pickle
-
 import sys
 from time import time
+from datetime import datetime
 
 #3rd Party Libraries
 from PyQt5 import QtWidgets as qtw
-from mat4py import loadmat
-
-
 from PyQt5 import QtCore as qtc
 
 #Own classes.
@@ -93,25 +86,18 @@ class DataController(qtw.QWidget):
 		self.DATASET_FILEPATH = self.settings["dataset"]
 		self.ANNOTATIONS_FILEPATH = self.settings["annotations"]
 
-		ts = time()
 		try:
-			with open(self.ANNOTATIONS_FILEPATH + self.SUBSET_ANNOTATIONS + "metadata.p", "rb") as fp:
-				self.annotationsDataset = pickle.load(fp)
-				print("Loaded annotations from pickle.")
-		except IOError:
-			annotations = loadmat(self.ANNOTATIONS_FILEPATH + self.SUBSET_ANNOTATIONS + "metadata.mat").get("metadata")
-			for i in range(len(annotations) - 1):
-				key = annotations["reg_name"][i]
-				newDict = dict()
-				for k in annotations:
-					if k == "reg_name":
-						continue
-					newDict.update({k: annotations[k][i]})
-				self.annotationsDataset.update({key: newDict})
-				self._prepDataset(self.annotationsDataset[key])
-			with open(self.ANNOTATIONS_FILEPATH + self.SUBSET_ANNOTATIONS + "metadata.p", "wb") as fp:
-				pickle.dump(self.annotationsDataset, fp, protocol=pickle.HIGHEST_PROTOCOL)
-			print("Loaded annotations from .mat and saved pickle file.")
+			if not os.path.isdir(self.ANNOTATIONS_FILEPATH + self.SUBSET_ANNOTATIONS + "Pickle"):
+				os.mkdir(self.ANNOTATIONS_FILEPATH + self.SUBSET_ANNOTATIONS + "Pickle")
+			if not os.path.isdir(self.DATASET_FILEPATH + self.SUBSET_LP15 + "Pickle"):
+				os.mkdir(self.DATASET_FILEPATH + self.SUBSET_LP15 + "Pickle")
+			if not os.path.isdir(self.DATASET_FILEPATH + self.SUBSET_BCG + "Pickle"):
+				os.mkdir(self.DATASET_FILEPATH + self.SUBSET_BCG + "Pickle")
+		except IOError as e:
+			print(e)
+
+		ts = time()
+		self.annotationsDataset = Utility.convertMatToPickle(self.ANNOTATIONS_FILEPATH, self.SUBSET_ANNOTATIONS, "metadata")
 		print("Loading metadata took " + str(time() - ts) + " seconds.")
 
 		#Assigning correct variables to each case from metadata.mat
@@ -154,38 +140,17 @@ class DataController(qtw.QWidget):
 		case = dict()
 		self.currentCase = self.getCaseNames()[new_case_index]
 		caseName = self.getCaseNames()[new_case_index]
-		if not os.path.isdir(self.DATASET_FILEPATH + self.SUBSET_LP15 + "Pickle"):
-			os.mkdir(self.DATASET_FILEPATH + self.SUBSET_LP15 + "Pickle")
-		if not os.path.isdir(self.DATASET_FILEPATH + self.SUBSET_BCG + "Pickle"):
-			os.mkdir(self.DATASET_FILEPATH + self.SUBSET_BCG + "Pickle")
 
 		#LP15
 		ts = time()
-		try:
-			with open(self.DATASET_FILEPATH + self.SUBSET_LP15 + "Pickle/" + caseName + ".p", "rb") as fp:
-				datasetLP15 = pickle.load(fp)
-				print("LP15 loaded with pickle.")
-		except IOError:
-			datasetLP15 = loadmat(self.DATASET_FILEPATH + self.SUBSET_LP15 + "MAT/" + caseName + ".mat").get("rec")
-			self._prepDataset(datasetLP15)
-			with open(self.DATASET_FILEPATH + self.SUBSET_LP15 + "Pickle/" + caseName + ".p", "wb") as fp:
-				pickle.dump(datasetLP15, fp, protocol=pickle.HIGHEST_PROTOCOL)
-			print("Loaded LP15 from .mat file and converted to pickle.")
+		datasetLP15 = Utility.convertMatToPickle(self.DATASET_FILEPATH, self.SUBSET_LP15, caseName)
 		print("Loading LP15 case file took " + str(time() - ts) + " seconds.")
 
 		#BCG
 		ts = time()
-		try:
-			with open(self.DATASET_FILEPATH + self.SUBSET_BCG + "Pickle/" + caseName + ".p", "rb") as fp:
-				datasetBCG = pickle.load(fp)
-				print("BCG loaded with pickle.")
-		except IOError:
-			datasetBCG = loadmat(self.DATASET_FILEPATH + self.SUBSET_BCG + "MAT/" + caseName + ".mat").get("rec")
-			self._prepDataset(datasetBCG)
-			with open(self.DATASET_FILEPATH + self.SUBSET_BCG + "Pickle/" + caseName + ".p", "wb") as fp:
-				pickle.dump(datasetBCG, fp, protocol=pickle.HIGHEST_PROTOCOL)
-			print("Loaded BCG from .mat file and converted to pickle.")
+		datasetBCG = Utility.convertMatToPickle(self.DATASET_FILEPATH, self.SUBSET_BCG, caseName)
 		print("Loading BCG case file took " + str(time() - ts) + " seconds.")
+
 		ts = time()
 		datasetAnnotations = self.annotationsDataset[caseName]
 
@@ -226,6 +191,10 @@ class DataController(qtw.QWidget):
 	def saveMetadata(self, toSave):
 		if toSave:
 			print("Saving metadata files.")
+			Utility.savePickleFile(
+				self.ANNOTATIONS_FILEPATH, self.SUBSET_ANNOTATIONS, 
+				str(datetime.now()).replace(":", "-").replace(" ", "") + "metadata", self.annotationsDataset
+				)
 
 	def _prepDataset(self, dataset):
 		Utility.flattenVector(dataset)
