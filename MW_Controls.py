@@ -125,6 +125,7 @@ class MW_Controls(qtw.QWidget):
 			print("CO2 input successfully emitted")
 			self.co2 = number
 			self.co2_input_submitted.emit(number)
+			self.console_msg_submitted.emit("New CO2 value successfully submitted", 3000)
 		else:
 			self.co2_input.setText(f"{self.co2}")
 			self.console_msg_submitted.emit("Invalid CO2 value submitted. Allowed values are between 0 and 2.", 5000)
@@ -137,6 +138,7 @@ class MW_Controls(qtw.QWidget):
 			print("bcg input successfully emitted")
 			self.bcg = number
 			self.bcg_input_submitted.emit(number)
+			self.console_msg_submitted.emit("New bcg value successfully submitted", 3000)
 		else:
 			self.bcg_input.setText(f"{self.bcg}")
 			self.console_msg_submitted.emit("Invalid BCG value submitted. Only positive integers allowed.", 5000)
