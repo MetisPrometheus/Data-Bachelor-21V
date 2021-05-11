@@ -63,7 +63,7 @@ class MW_GraphCollection(qtw.QWidget):
 
 
 	def sliderMoved(self, slider_value):
-		print(f"slider moved to: {slider_value}")
+		print(f"MW_GC: slider moved to: {slider_value}")
 		for key, graphObj in self.graphs.items():
 			graphObj.clear()
 			graphObj.plotSlider(slider_value)
@@ -84,23 +84,25 @@ class MW_GraphCollection(qtw.QWidget):
 	def receiveNewSpan(self, new_span):
 		print(f"changed to new span: {new_span}")
 		self.span = new_span
-		self.computeIncrements()
 
 		x_range = self.graphs["s_ecg"].viewRange()[0]
+		if x_range[0] < 0:
+			x_range[0] = 0
+
+		print(x_range)
 		for key, graphObj in self.graphs.items():
 			graphObj.setSpan(new_span, math.floor(x_range[0]))
 
-		#Set slider to nearest tick from the current position
-		inc_step = self.window_length/5
-		nearest_inc = math.floor(x_range[0]/inc_step)
-		self.slider.blockSignals(True)
-		self.slider.setValue(nearest_inc)
-		self.slider.blockSignals(False)
+		#Calculate total slider increments with the new window_size
+		self.computeIncrements()
+		#Use current x-position to set the slider value to the closest increment
+		self.updateSliderPosition(x_range[0])
 
 	def setDataLength(self, data_length):
 		self.data_length = data_length
 		self.computeIncrements()
 
+	#Calculate how many slider increments for a given window_size
 	def computeIncrements(self, window_length=0):
 		#Calculate window_length based on frequency (250) and timeframe (60)
 		frequency = 250
@@ -113,7 +115,9 @@ class MW_GraphCollection(qtw.QWidget):
 
 		incomplete_section = ((self.data_length/self.window_length)-(complete_sections+1))*10 #[0-10]
 		total_increments += math.ceil(incomplete_section/2)
+		self.slider.blockSignals(True)
 		self.slider.setMaximum(total_increments)
+		self.slider.blockSignals(False)
 		return total_increments
 
 	def receiveTimelineXPos(self, xPos):
@@ -128,7 +132,7 @@ class MW_GraphCollection(qtw.QWidget):
 
 	def wheelEvent(self, ev):
 		zoom = False if ev.angleDelta().y() == 120 else True
-
+		print("mousehweel used")
 		#Increase or decrease viewbox by 10%
 		x_range = self.graphs["s_ecg"].viewRange()[0]
 		skew = math.floor((x_range[1]-x_range[0])*0.05)
@@ -141,7 +145,7 @@ class MW_GraphCollection(qtw.QWidget):
 
 		#Exit function if new window size would exceed the preset limits
 		window_length = math.floor(x_range[1] - x_range[0])
-		if window_length >= self.MAX_X_RANGE or window_length <= self.MIN_X_RANGE:
+		if window_length > self.MAX_X_RANGE or window_length < self.MIN_X_RANGE:
 			return
 		self.computeIncrements(window_length) #move to e-82,31?
 
@@ -155,21 +159,16 @@ class MW_GraphCollection(qtw.QWidget):
 			graphObj.plotPosition(math.floor(x_range[0]))
 			graphObj.updateAxis()
 
-		#Set slider to nearest tick from the current position
-		inc_step = window_length/5
-		nearest_inc = math.floor(x_range[0]/inc_step)
-		self.slider.blockSignals(True)
-		self.slider.setValue(nearest_inc)
-		self.slider.blockSignals(False)
+		self.updateSliderPosition(x_range[0])
 
 	def eventFilter(self, o, e):
 		if not self.stopPlot:
 			if e.type() == 3: #3 = MouseRelease
+				print("mouse released")
 				#print("Mouse released and MW_GraphCollection.py eventFilter() running")
 				x_range = self.graphs["s_ecg"].viewRange()[0]
 				window_length = math.floor(x_range[1] - x_range[0])
 				increments = self.computeIncrements(window_length)
-				print(window_length)
 
 				#Loop through plotwidgets and fill with new case data
 				for signal, graphObj in self.graphs.items():
@@ -178,18 +177,22 @@ class MW_GraphCollection(qtw.QWidget):
 						x_range[0] = 0
 					graphObj.plotPosition(math.floor(x_range[0]))
 
-				#Set slider to nearest tick from the current position
-				inc_step = window_length/5
-				nearest_inc = math.floor(x_range[0]/inc_step)
-				self.slider.blockSignals(True)
-				self.slider.setValue(nearest_inc)
-				self.slider.blockSignals(False)
+				self.updateSliderPosition(x_range[0])
 			elif e.type() == 82: #82 = Zoom release but event 3 always run before 82
 				print("zoom done")
 				for signal, graphObj in self.graphs.items():
 					graphObj.updateAxis()
 			return False
 		return False
+
+	def updateSliderPosition(self, xPos):
+		#Set slider to nearest tick from the current position
+		inc_step = self.window_length/5
+		nearest_inc = math.floor(xPos/inc_step)
+		print(f"--xpos: {xPos}\n--window size: {self.window_length}\n--inc step: {inc_step}\n--nearest inc: {nearest_inc}\n\n")
+		self.slider.blockSignals(True)
+		self.slider.setValue(nearest_inc)
+		self.slider.blockSignals(False)
 
 	def plotGraphs(self, case):
 		self.settings = case["settings"]
@@ -216,6 +219,7 @@ class MW_GraphCollection(qtw.QWidget):
 					self.dock_area.addDock(self.docks[signal], "bottom")
 				#Make a graph for every signal and assign them to their own docks
 				self.graphs[signal] = GraphWidget(signal)
+				self.graphs[signal].setLimits(xMin=-500, minXRange=self.MIN_X_RANGE, maxXRange=self.MAX_X_RANGE)
 				self.graphs[signal].stopPlotting.connect(self._blockPlotting)
 				self.graphs[signal].sigRoiMessage.connect(self._setStatusMessage)
 				self.graphs[signal].viewport().installEventFilter(self)
