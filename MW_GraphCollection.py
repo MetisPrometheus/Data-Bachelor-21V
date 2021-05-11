@@ -13,6 +13,7 @@ from pyqtgraph.dockarea import *
 #Local Classes
 from GraphWidget import GraphWidget
 from AnnotationsWidget import AnnotationsWidget
+from Utility import Utility
 # from CustomPlot import CustomPlot
 
 # class MW_GraphCollection(qtw.QMainWindow):
@@ -197,7 +198,8 @@ class MW_GraphCollection(qtw.QWidget):
 		sample_rate = case["data"]["fs"]
 		self.case = case
 		self.tags._setTags(case)
-		self._normalizeSignals(case)
+		Utility.normalizeSignals(case)
+		Utility.clearPadding(case)
 
 		print("case[data]: ", case["data"])
 		# Make a new plotwidget for new signals
@@ -270,10 +272,9 @@ class MW_GraphCollection(qtw.QWidget):
 		with open("settings.txt", "w") as f:
 			json.dump(self.settings, f)
 		print("***The order of the graphs have been saved")
-
+	"""
 	def _normalizeSignals(self, case):
 		#EKG
-		#TODO: Skal vi bruke handles case["handles"] her?
 		s_ecg = case["data"]["s_ecg"]
 		case["data"]["s_ecg"] = np.where(((s_ecg > 5) & (s_ecg < np.inf)) | (s_ecg < -5), 0, s_ecg)
 		#TTI: normal and vent
@@ -288,7 +289,7 @@ class MW_GraphCollection(qtw.QWidget):
 		#Set padding to NaN.
 		for key, value in case["data"].items():
 			case["data"][key] = np.where(value == np.inf, np.nan, value)
-
+	"""
 	def toggleOverlay(self, state, data):
 		if data == "s_ecg":
 			if state:

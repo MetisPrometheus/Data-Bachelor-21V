@@ -421,10 +421,14 @@ class GraphWidget(pg.PlotWidget):
 					self.case["metadata"][signal][index][value[0]] = pos/250  
 					self.case["metadata"][signal][index][value[1]] = (pos + size)/250
 			else:
-				if (value == 0 and np.isnan(rawData[int(np.round(pos))])) or (value == 1 and np.isnan(rawData[int(np.round(pos))])):
+				pos += 0.5*size
+				if( 
+					(value == 0 and np.isnan(rawData[int(np.round(pos))]) or pos < 0.0) or 
+					(value == 1 and np.isnan(rawData[int(np.round(pos))]))
+				):
 					msg = "Cannot move ROI outside the graph."
 				#Er dette RegionROI med CircleROI?
-				elif self.name in ["s_ecg", "s_vent"] and (pos/250 <= metaData[0] or pos/250 >= metaData[-1]):
+				elif self.name in ["s_ecg", "s_vent"] and ((pos)/250 <= metaData[0] or (pos)/250 >= metaData[-1]):
 					msg = "Cannot move CircleROI outside its RegionROI."
 				#Or is it a MinMaxROI?
 				elif self.name in ["s_CO2"]:
@@ -442,12 +446,12 @@ class GraphWidget(pg.PlotWidget):
 							rightBorder = len(rawData) - 1
 						else:
 							rightBorder = self.case["metadata"][signal][index + 1][0]
-					if (pos+0.25*size)/250 < leftBorder or (pos-0.25*size)/250 > rightBorder:
+					if (pos)/250 < leftBorder or (pos)/250 > rightBorder:
 						msg = "Cannot move MinMaxROI past neighbouring points."
 					else:
-						self.case["metadata"][signal][index][value] = (pos + 0.5*size)/250
+						self.case["metadata"][signal][index][value] = (pos)/250
 				else:
-					self.case["metadata"][signal][index][value] = (pos + 0.5*size)/250
+					self.case["metadata"][signal][index][value] = (pos)/250
 		except Exception as e:
 			msg = str(e)
 		finally: 

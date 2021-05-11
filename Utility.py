@@ -41,6 +41,29 @@ class Utility(object):
             return False
 
     @staticmethod
+    def normalizeSignals(case):
+        #EKG
+        s_ecg = case["data"]["s_ecg"]
+        case["data"]["s_ecg"] = np.where(((s_ecg > 5) & (s_ecg < np.inf)) | (s_ecg < -5), 0, s_ecg)
+        #TTI: normal and vent
+        s_tti = case["data"]["s_imp"]
+        case["data"]["s_imp"] = np.where((np.isnan(s_tti)), 0, s_tti)
+        #PPG
+        s_ibp = case["data"]["s_ppg"]
+        case["data"]["s_ppg"] = np.where((np.isnan(s_ibp)) | (s_ibp < -10) | ((s_ibp > 300) & (s_ibp < np.inf)), 0, s_ibp)
+        #CO2
+        s_CO2 = case["data"]["s_CO2"]
+        case["data"]["s_CO2"] = np.where((np.isnan(s_CO2)) | (s_CO2 < -5) | ((s_CO2 > 150) & (s_CO2 < np.inf)), 0, s_CO2)
+    
+    @staticmethod
+    def clearPadding(case):    
+        #Set padding to NaN.
+        for key, value in case["data"].items():
+            case["data"][key] = np.where(value == np.inf, np.nan, value)
+
+
+    #ROI methods.
+    @staticmethod
     def getRangeRatio(vb):
         #Sjekk hvilket spenn er minst. Del så begge spenn med dette.
         xyArray = vb.state["viewRange"]
