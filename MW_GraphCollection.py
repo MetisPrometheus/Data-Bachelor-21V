@@ -26,6 +26,7 @@ class MW_GraphCollection(qtw.QWidget):
 	#Class Variables
 	span = 60
 	data_length = None
+	window_length = None
 	settings = {}
 	stopPlot = False
 	timeline_index = 0
@@ -82,10 +83,18 @@ class MW_GraphCollection(qtw.QWidget):
 	def receiveNewSpan(self, new_span):
 		print(f"changed to new span: {new_span}")
 		self.span = new_span
-		slider_value = self.slider.value()
-		for key, graphObj in self.graphs.items():
-			graphObj.setSpan(new_span, slider_value)
 		self.computeIncrements()
+
+		x_range = self.graphs["s_ecg"].viewRange()[0]
+		for key, graphObj in self.graphs.items():
+			graphObj.setSpan(new_span, math.floor(x_range[0]))
+
+		#Set slider to nearest tick from the current position
+		inc_step = self.window_length/5
+		nearest_inc = math.floor(x_range[0]/inc_step)
+		self.slider.blockSignals(True)
+		self.slider.setValue(nearest_inc)
+		self.slider.blockSignals(False)
 
 	def setDataLength(self, data_length):
 		self.data_length = data_length
@@ -95,11 +104,13 @@ class MW_GraphCollection(qtw.QWidget):
 		#Calculate window_length based on frequency (250) and timeframe (60)
 		frequency = 250
 		if window_length == 0:
-			window_length = frequency*self.span
-		complete_sections = math.floor(self.data_length/window_length) - 1
+			self.window_length = frequency*self.span
+		else:
+			self.window_length = window_length
+		complete_sections = math.floor(self.data_length/self.window_length) - 1
 		total_increments = complete_sections*5 #Increments will slide graph by 20%
 
-		incomplete_section = ((self.data_length/window_length)-(complete_sections+1))*10 #[0-10]
+		incomplete_section = ((self.data_length/self.window_length)-(complete_sections+1))*10 #[0-10]
 		total_increments += math.ceil(incomplete_section/2)
 		self.slider.setMaximum(total_increments)
 		return total_increments
@@ -250,12 +261,15 @@ class MW_GraphCollection(qtw.QWidget):
 		#After plotting new cases set the slider value back to 0
 		self.slider.setValue(0)
 	
-	#Executes when the program is closed and will save the order of the graphs
+	#Executes when the program is closed and will save the order of the graphs in settings.txt
 	def saveDockState(self):
 		state = self.dock_area.saveState()
+		dock_sizes = state["main"][2]["sizes"]
+		state["main"][2]["sizes"] = [100 for element in dock_sizes]
 		self.settings["dockstate"] = state
 		with open("settings.txt", "w") as f:
 			json.dump(self.settings, f)
+		print("***The order of the graphs have been saved")
 
 	def _normalizeSignals(self, case):
 		#EKG
