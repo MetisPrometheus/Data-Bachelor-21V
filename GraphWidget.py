@@ -93,19 +93,12 @@ class GraphWidget(pg.PlotWidget):
 		self.plotSlider()
 		self.updateAxis()
 
-	def setSpan(self, new_span, old_slider):
+	def setSpan(self, new_span, viewbox_start):
 		#Calculate by what factor the window has been scaled
 		self.span = new_span
-		old_window = self.window_length
 		self.computeIncrements()
-		factor = old_window/self.window_length
-
-		#Use the factor to roughly decide where the new slider value should be
-		new_slider = math.floor(old_slider*factor)
-		if new_slider > self.total_increments:
-			new_slider = self.total_increments		
-		self.plotSlider(new_slider)
-		self.updateAxis()
+		self.setXRange(viewbox_start, viewbox_start+self.window_length, 0)
+		self.plotPosition(viewbox_start)
 
 	def setFrequency(self, sample_rate):
 		self.frequency = sample_rate
