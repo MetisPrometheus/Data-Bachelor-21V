@@ -34,10 +34,6 @@ class GraphWidget(pg.PlotWidget):
 	time = None
 	x_start = None
 	x_end = None
-	myCircle = None
-	#qrs_submitted = False
-	#vent_submitted = False
-	#co2_submitted = False
 
 	AnnotatedGraphs = {
 		"s_ecg": False,

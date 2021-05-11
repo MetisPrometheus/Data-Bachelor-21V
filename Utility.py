@@ -30,12 +30,12 @@ class Utility(object):
     @staticmethod
     def equalizeLengthLists(dataset):
         maxLength = 0
-        for _, value in dataset.items():
-            if Utility.isList(value) and len(value) > maxLength:
+        for key, value in dataset.items():
+            if Utility.isList(value) and key != "fs" and len(value) > maxLength:
                 maxLength = len(value)
 
         for key, value in dataset.items():
-            if Utility.isList(value):
+            if Utility.isList(value) and key != "fs":
                 dataset[key] = np.pad(value, (0, maxLength - len(value)), "constant", constant_values=(0, np.inf))
 
     #Check if list is a Python list or Numpy list.
@@ -46,11 +46,15 @@ class Utility(object):
         else:
             return False
     
-    #Setting limit of displacement to 200s by default.
+    #Set a limit?
     @staticmethod
-    def displaceSignal(aList, seconds, frequency, limit=200):
-        finalDisplacement = int(min(limit*frequency, seconds*frequency))
-        resultList = np.pad(aList, (finalDisplacement, 0), "constant", constant_values=(np.nan, 0))
+    def displaceSignal(aList, seconds, frequency):
+        finalDisplacement = int(seconds*frequency)
+        resultList = None
+        if finalDisplacement >= 0:
+            resultList = np.pad(aList, (finalDisplacement, 0), "constant", constant_values=(np.nan, 0))
+        else:
+            resultList = aList[abs(finalDisplacement):]
         return [resultList, finalDisplacement]
 
     @staticmethod

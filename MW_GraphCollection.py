@@ -276,24 +276,7 @@ class MW_GraphCollection(qtw.QWidget):
 		with open("settings.txt", "w") as f:
 			json.dump(self.settings, f)
 		print("***The order of the graphs have been saved")
-	"""
-	def _normalizeSignals(self, case):
-		#EKG
-		s_ecg = case["data"]["s_ecg"]
-		case["data"]["s_ecg"] = np.where(((s_ecg > 5) & (s_ecg < np.inf)) | (s_ecg < -5), 0, s_ecg)
-		#TTI: normal and vent
-		s_tti = case["data"]["s_imp"]
-		case["data"]["s_imp"] = np.where((np.isnan(s_tti)), 0, s_tti)
-		#PPG
-		s_ibp = case["data"]["s_ppg"]
-		case["data"]["s_ppg"] = np.where((np.isnan(s_ibp)) | (s_ibp < -10) | ((s_ibp > 300) & (s_ibp < np.inf)), 0, s_ibp)
-		#CO2
-		s_CO2 = case["data"]["s_CO2"]
-		case["data"]["s_CO2"] = np.where((np.isnan(s_CO2)) | (s_CO2 < -5) | ((s_CO2 > 150) & (s_CO2 < np.inf)), 0, s_CO2)
-		#Set padding to NaN.
-		for key, value in case["data"].items():
-			case["data"][key] = np.where(value == np.inf, np.nan, value)
-	"""
+
 	def toggleOverlay(self, state, data):
 		if data == "s_ecg":
 			if state:
@@ -329,4 +312,31 @@ class MW_GraphCollection(qtw.QWidget):
 		else:
 			self.tags.clear()
 
-			
+	def getGraph(self, graphName):
+		if graphName in self.graphs:
+			return self.graphs[graphName]
+
+	@qtc.pyqtSlot(float)
+	def displaceCO2(self, displacement):
+		oldDisplacement = self.case["metadata"]["t_CO2"]
+		newDisplacement = displacement - oldDisplacement
+		self.case["data"]["s_CO2"], _ = Utility.displaceSignal(self.case["data"]["s_CO2"], newDisplacement, self.case["data"]["fs"])
+		self.case["metadata"]["t_CO2"] = displacement
+		Utility.equalizeLengthLists(self.case["data"])
+		#TODO: Ivar
+		##Grafer har fått endret deres lengder. Plott alt på nytt.
+		self.plotGraphs(self.case)
+		print(displacement)
+
+	@qtc.pyqtSlot(int)
+	def displaceBCG(self, displacement):
+		oldDisplacement = self.case["metadata"]["t_bcg"]
+		newDisplacement = displacement - oldDisplacement
+		self.case["data"]["s_bcg1"], _ = Utility.displaceSignal(self.case["data"]["s_bcg1"], newDisplacement, self.case["data"]["fs"])
+		self.case["data"]["s_bcg2"], _ = Utility.displaceSignal(self.case["data"]["s_bcg2"], newDisplacement, self.case["data"]["fs"])
+		self.case["metadata"]["t_bcg"] = displacement
+		Utility.equalizeLengthLists(self.case["data"])
+		#TODO: Ivar
+		##Grafer har fått endret deres lengder. Plott alt på nytt.
+		self.plotGraphs(self.case)
+		print(displacement)

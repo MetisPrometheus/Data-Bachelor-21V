@@ -98,6 +98,8 @@ class MainWindow(qtw.QWidget):
 		self.MW_GraphCollection.setDataLength(len(case["data"]["s_ecg"])) #Can use any signal (all same length)
 		self.MW_GraphCollection.plotGraphs(case)
 		self.case = case
+		self.MW_Controls.co2_input_submitted.connect(self.MW_GraphCollection.displaceCO2)
+		self.MW_Controls.bcg_input_submitted.connect(self.MW_GraphCollection.displaceBCG)
 
 	def initializeWindowSize(self, saved_settings):
 		self.settings = saved_settings

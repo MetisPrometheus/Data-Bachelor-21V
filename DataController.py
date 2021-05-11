@@ -72,8 +72,6 @@ class DataController(qtw.QWidget):
 	#Every Case
 	case_submitted = qtc.pyqtSignal(dict)
 
-
-
 	settings = {}
 
 	def __init__(self):

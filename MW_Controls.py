@@ -1,5 +1,6 @@
 #Standard Libraries
 import json
+import locale
 
 #3rd Party Libraries
 from PyQt5 import QtWidgets as qtw
@@ -38,7 +39,7 @@ class MW_Controls(qtw.QWidget):
 		self.co2_label = qtw.QLabel("CO2:")
 		self.co2_label.setFixedWidth(25)
 		self.co2_input = qtw.QLineEdit(returnPressed=self.co2InputEntered)
-		self.double_validator = qtg.QDoubleValidator(bottom=0, top=2, decimals=3)
+		self.double_validator = qtg.QDoubleValidator(0.0, 2.00, 3)
 		self.double_validator.setNotation(qtg.QDoubleValidator.StandardNotation)
 		self.co2_input.setValidator(self.double_validator)
 		self.co2_input.setFixedWidth(25)
@@ -105,12 +106,12 @@ class MW_Controls(qtw.QWidget):
 	def receiveInputValues(self, co2, bcg):
 		self.co2 = co2
 		self.bcg = bcg
-		self.co2_input.setText(f"{self.co2}")
-		self.bcg_input.setText(f"{self.bcg}")
+		self.co2_input.setText(qtc.QLocale().toString(self.co2))
+		self.bcg_input.setText(qtc.QLocale().toString(self.bcg))
 
 	def co2InputEntered(self):
-		number = float(self.co2_input.text())
-		self.co2_input.setText(str(number))
+		number = qtc.QLocale().toDouble(self.co2_input.text())[0]
+		self.co2_input.setText(qtc.QLocale().toString(number))
 		if 0 <= number <= 2:
 			print("CO2 input successfully emitted")
 			self.co2 = number
@@ -123,7 +124,7 @@ class MW_Controls(qtw.QWidget):
 	def bcgInputEntered(self):
 		number = int(self.bcg_input.text())
 		self.bcg_input.setText(str(number))
-		if 0 <= number <= 100000:
+		if 0 <= number <= 1000:
 			print("bcg input successfully emitted")
 			self.bcg = number
 			self.bcg_input_submitted.emit(number)
