@@ -85,6 +85,10 @@ stylesheet = """
 	background-color: lightblue;
 }
 
+#launchBtn, #directoryBtn {
+	padding: 28px;
+}
+
 #addBtn, #deleteBtn, #editBtn {
 	padding: 2px;
 	margin: 0px;
