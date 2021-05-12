@@ -167,10 +167,9 @@ class GraphWidget(pg.PlotWidget):
 		self.plotSection()
 
 	def plotSection(self, slider_value=0):
-		#TODO: Egen funksjon med percentiles og slikt i matlab.
 		self.setYRange(np.nanmax(self.case["data"][self.name]), np.nanmin(self.case["data"][self.name]), padding=0.05)
 		self.clear()
-		#TODO: Når nye checkboxes kommer må ifene bli endret på.
+
 		if self.name == "s_ecg":
 			self.plot(self.time, self.case["data"][self.name][self.x_start:self.x_end], pen=self.pen)
 			self._setAnnotations()
@@ -280,9 +279,6 @@ class GraphWidget(pg.PlotWidget):
 			if x0 > xEnd:
 				break
 
-
-	#TODO: Seb Her blir det tidsforskyvninger. Dette må implementeres bedre når vi får
-	#på plass bokser for BCG/CO2 forskyvning osv.
 	def _plotCOPoints(self):
 		t_cap = self.case["metadata"]["t_cap"]
 		t_CO2 = self.case["metadata"]["t_CO2"] #Tidsforskyvning
@@ -308,7 +304,6 @@ class GraphWidget(pg.PlotWidget):
 				self._addPointMinMax("s_CO2", "t_cap", [i, 1], nMax, sizeX, nMaxIndeks, sizeY, True, (0, 255, 0))
 			if nMax > xEnd:
 				break
-
 
 	def _setAnnotations(self):
 		anns = self.case["metadata"]["ann"]

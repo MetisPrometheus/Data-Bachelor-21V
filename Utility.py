@@ -68,7 +68,6 @@ class Utility(object):
                 dataset = pickle.load(fp)
                 if "fullFile" in dataset and dataset["fullFile"] == True:
                     dataset.pop("fullFile")
-                    print(subsetFilepath + " loaded with pickle.")
                     return dataset
                 else:
                     raise Exception("Pickle file corrupted.")

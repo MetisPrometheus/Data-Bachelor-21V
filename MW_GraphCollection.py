@@ -204,7 +204,6 @@ class MW_GraphCollection(qtw.QWidget):
 		Utility.normalizeSignals(case)
 		Utility.clearPadding(case)
 
-		print("case[data]: ", case["data"])
 		# Make a new plotwidget for new signals
 		for signal in case["data"].keys():
 			if signal not in self.graphs.keys() and signal != "fs" and signal != "s_imp":

@@ -2,7 +2,6 @@
 import os
 import json
 import sys
-from time import time
 from datetime import datetime
 
 #3rd Party Libraries
@@ -12,49 +11,7 @@ from PyQt5 import QtCore as qtc
 #Own classes.
 from Utility import Utility
 from MW_GraphCollection import MW_GraphCollection
-#####################
-#ClassDataController#
-#####################
-#DataKontrolleren laster inn tre filer: Case_XX.mat fra LP15, BCG og hele metadata.mat filen fra 5 ANNOTATIONS.
-#Antall cases og deres navn hentes inn fra metadata.mat og sorteres i ei liste, da denne brukes til indeksering i drop down menyen.
-#Alt av data hentet inn fra .mat filene omstruktureres til en vektor (1D array) og omgjøres til numpy arrays, som er raskere og bruker litt mindre plass (se _prepDataSet()).
-#Signalene i case["data"] er paddet til lik lengde ved å legge til np.inf på slutten via Utility.equalizeLengthLists(). 
-#Dette "rengjøres" så til np.nan (Not a Number) i MW_GraphCollection.py sin _normalizeSignals() funksjon.
-#Hele casen struktureres i en dictionary som følger:
-#case --
-#		data --
-#				s_bcg1		(np.array float Vektor)
-#				s_bcg2		(np.array float Vektor)
-#				s_CO2		(np.array float Vektor)
-#				s_ppg		(np.array float Vektor)
-#				s_imp		(np.array float Vektor)
-#				s_ecg		(np.array float Vektor)
-#				s_vent		(np.array float Vektor)
-#				fs			(int)
-#		metadata --
-#				patient_ID	(String)
-#				dev_model	(String)
-#				rec_date	(String)
-#				rec_time	(String)
-#				o_reg_name	(String)
-#				t_v			(np.array float Vektor)
-#				ann			(np.array String Vektor)
-#				t_ann		(np.array float Vektor)
-#				t_LP15		(np.array float Vektor)
-#				EtCO2		(np.array float Vektor)
-#				respR		(np.array float Vektor)
-#				t_CO2		(float)
-#				t_start		(float)
-#				t_ref		(float)
-#				t_end		(int/float)
-#				t_qrs		(np.array float 2D nx3)
-#				t_vent		(np.array float 2D nx3)
-#				t_cap		(np.array float 2D nx2)
-#				t_bcg		(int)
-#		new_index 			(bool)
-##################
-## Seb 13.04.21	##
-##################
+
 class DataController(qtw.QWidget):
 
 	DATASET_FILEPATH = None
@@ -78,7 +35,6 @@ class DataController(qtw.QWidget):
 		super().__init__()
 		print("--- DataController Initialized ---")
 
-	#TODO: Legg til metode som kanskje automatisk finner frem til mat filene?
 	def receiveSettings(self, saved_settings):
 		self.settings = saved_settings
 		self.DATASET_FILEPATH = self.settings["dataset"]
@@ -94,15 +50,11 @@ class DataController(qtw.QWidget):
 		except IOError as e:
 			print(e)
 
-		ts = time()
 		self.annotationsDataset = Utility.convertMatToPickle(self.ANNOTATIONS_FILEPATH, self.SUBSET_ANNOTATIONS, "metadata")
-		print("Loading metadata took " + str(time() - ts) + " seconds.")
 		
 		#Make a list of case names from the metadata file and sort them for indexing.
 		self.CASE_NAMES = list(self.annotationsDataset.keys())
 		self.getCaseNames().sort()
-		#print("self.annotationsDataset:", self.annotationsDataset)
-		#Explain later
 		self.filenames_submitted.emit(self.getCaseNames())
 
 		#Since this is the first case -> new_index = False (default value)
@@ -149,7 +101,6 @@ class DataController(qtw.QWidget):
 		case["data"]["s_CO2"], CO2Displacement = Utility.displaceSignal(case["data"]["s_CO2"], case["metadata"]["t_CO2"], case["data"]["fs"])
 		Utility.equalizeLengthLists(case["data"])
 
-		#TODO: Denne er vel ikke nødvendig lenger?
 		case["new_index"] = new_case_index
 		
 		#New data signals will be saved to the settings for ease of later plotting
