@@ -242,11 +242,11 @@ class GraphWidget(pg.PlotWidget):
 		xEnd = self.getViewBox().state["viewRange"][0][1]
 
 		for i in range(len(t_qrs)):
-			x0 = t_qrs[i][0]*self.frequency #Her trengs ikke int(np.round())
+			x0 = t_qrs[i][0]*self.frequency
 			x1 = t_qrs[i][2]*self.frequency
 			xPoint = t_qrs[i][1]*self.frequency
 			xPointIndeks = int(np.round(xPoint))
-		#Hvis Entry ender i vårt område eller starter i vårt område
+		#If Entry ends after viewRange start and begins before viewRange end
 			if x1 >= xStart and x0 <= xEnd:
 				self._addRegion(x0, x1, i, "t_qrs", sizeX)
 			if xPoint >= xStart and xPoint <= xEnd:

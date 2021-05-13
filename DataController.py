@@ -100,6 +100,8 @@ class DataController(qtw.QWidget):
 		case["data"]["s_bcg2"], bcg2Displacement = Utility.displaceSignal(case["data"]["s_bcg2"], case["metadata"]["t_bcg"], case["data"]["fs"])
 		case["data"]["s_CO2"], CO2Displacement = Utility.displaceSignal(case["data"]["s_CO2"], case["metadata"]["t_CO2"], case["data"]["fs"])
 		Utility.equalizeLengthLists(case["data"])
+		Utility.normalizeSignals(case)
+		Utility.clearPadding(case)
 
 		case["new_index"] = new_case_index
 		
@@ -115,7 +117,7 @@ class DataController(qtw.QWidget):
 		with open("settings.txt", "w") as f:
 			for element in checkboxes:
 				#New data signals are added and set to True and will not overwrite previously saved signals
-				#Frequency is not a signal, so do NOT add it to checkboxes.
+				#Frequency and s_imp are not valid signals, so do NOT add it to checkboxes.
 				if element != "fs" and element != "s_imp" and element not in self.settings["checkboxes"]:
 					self.settings["checkboxes"][element] = True
 			#Save the settings to a txt.file in JSON format located in the same directory as the .exe file

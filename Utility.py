@@ -26,7 +26,7 @@ class Utility(object):
             if Utility.isList(dataset[key]):
                 dataset[key] = np.array(dataset[key])
 
-    #Pad lists to same length as longest lost in given dictionary.
+    #Pad lists to same length as longest in given dictionary, excluding trailing NaN values.
     @staticmethod
     def equalizeLengthLists(dataset):
         maxLength = 0
@@ -125,7 +125,8 @@ class Utility(object):
     def clearPadding(case):    
         #Set padding to NaN.
         for key, value in case["data"].items():
-            case["data"][key] = np.where(value == np.inf, np.nan, value)
+            if Utility.isList(value):
+                case["data"][key] = np.where(value == np.inf, np.nan, value)
 
 
     #ROI methods.

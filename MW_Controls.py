@@ -120,9 +120,7 @@ class MW_Controls(qtw.QWidget):
 	def co2InputEntered(self):
 		number = qtc.QLocale().toDouble(self.co2_input.text())[0]
 		self.co2_input.setText(qtc.QLocale().toString(number))
-		print(f"The user has entered value: {number} in the co2 input field")
 		if 0 <= number <= 2:
-			print("CO2 input successfully emitted")
 			self.co2 = number
 			self.co2_input_submitted.emit(number)
 			self.console_msg_submitted.emit("New CO2 value successfully submitted", 3000)

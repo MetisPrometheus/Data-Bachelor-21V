@@ -201,8 +201,8 @@ class MW_GraphCollection(qtw.QWidget):
 		sample_rate = case["data"]["fs"]
 		self.case = case
 		self.tags._setTags(case)
-		Utility.normalizeSignals(case)
-		Utility.clearPadding(case)
+		#Utility.normalizeSignals(case)
+		#Utility.clearPadding(case)
 
 		# Make a new plotwidget for new signals
 		for signal in case["data"].keys():
