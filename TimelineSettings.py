@@ -11,6 +11,7 @@ from PyQt5 import QtGui as qtg
 class TimelineSettings(qtw.QWidget):
 
 	option = ""
+	current_timeline = ""
 
 	timeline_submitted = qtc.pyqtSignal(str, str)
 
@@ -42,6 +43,8 @@ class TimelineSettings(qtw.QWidget):
 
 	def openWindow(self, option, current_timeline):
 		self.option = option
+		self.current_timeline = current_timeline
+		self.ok_btn.show()
 
 		if self.option == "Add":
 			self.label.setText("Add New Timeline")
@@ -60,10 +63,15 @@ class TimelineSettings(qtw.QWidget):
 		self.show()
 
 	def submit(self):
-		if len(self.input.text()) == 0:
+		if self.current_timeline == "Standard" and self.option != "Add":
+			if self.option == "Delete":
+				self.label.setText("You can't remove this timeline.")
+			elif self.option == "Edit":
+				self.label.setText("You can't rename this timeline.")
+			self.ok_btn.hide()
+			self.input.hide()
+		elif len(self.input.text()) == 0:
 			self.label.setText("This field can't be left empty!")
-		elif self.input.text() == "Timeline 1":
-			self.label.setText("Can't make changes to this timeline.")
 		else:
 			print("self.option:",self.option, self.input.text())
 			self.timeline_submitted.emit(self.option, self.input.text())
