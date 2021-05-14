@@ -24,11 +24,9 @@ class InitialWindow(qtw.QWidget):
 		self.setObjectName("initialWindow") #For styling
 
 		self.startBtn = qtw.QPushButton("Start", clicked=self.launchGUI, objectName="launchBtn")
-		# self.startBtn.setFixedHeight(80)
-		# self.startBtn.setFixedWidth(150)
+		self.startBtn.setFixedHeight(70)
 		self.directoryBtn = qtw.QPushButton("Select\nDirectories", clicked=self.requestDirectory, objectName="directoryBtn")
-		# self.directoryBtn.setFixedHeight(80)
-		# self.directoryBtn.setFixedWidth(150)
+		self.directoryBtn.setFixedHeight(80)
 
 		self.setLayout(qtw.QVBoxLayout())
 		self.layout().addWidget(self.startBtn)

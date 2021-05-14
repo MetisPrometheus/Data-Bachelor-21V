@@ -58,7 +58,7 @@ class MW_Controls(qtw.QWidget):
 		self.roi_checkbox3 = qtw.QCheckBox("CO2 ANNOT", clicked=lambda:self.emitRoiCheckboxState(self.roi_checkbox3, 's_CO2'))
 
 		self.dropdown_timelines = qtw.QComboBox(currentIndexChanged=self.changeTimeline)
-		self.dropdown_timelines.insertItems(0, ["Timeline 1", "Timeline 2", "Timeline 3"])
+		self.dropdown_timelines.insertItems(0, ["Standard"])
 
 		add_icon = qtg.QIcon(qtg.QPixmap(":/images/add.png"))
 		self.add_timeline = qtw.QPushButton(icon=add_icon, clicked=lambda:self.requestTimelineSettings("Add"), objectName="addBtn")
