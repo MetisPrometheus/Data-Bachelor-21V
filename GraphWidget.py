@@ -62,18 +62,9 @@ class GraphWidget(pg.PlotWidget):
 		else:
 			super().__init__()
 
-		# axis = pg.DateAxisItem()
-		# self.setAxisItems({"bottom": axis})
-		#Fix graphwidget settings
 		self.pen = pg.mkPen('b')
 		self.setBackground('w')
-		#pg.setConfigOption("background", "w")
 		pg.setConfigOption("foreground", "k")
-
-	#Event triggered when a plotwidget is focused and a key is pressed
-	# def keyPressEvent(self, ev):
-		#Implement keyboard commands?
-		# print(ev.key())
 
 	def storeData(self, case):
 		self.case = case
@@ -110,7 +101,7 @@ class GraphWidget(pg.PlotWidget):
 		incomplete_section = ((data_length/self.window_length)-(complete_sections+1))*10 #[0-10]
 		self.total_increments += math.ceil(incomplete_section/2)
 
-	#Do not remove. Is needed for the wheelEvent in MW_GraphCollection to execute
+	#DO NOT REMOVE: This is needed to activate the wheelEvent in MW_GraphCollection
 	def wheelEvent(self, ev):
 		pass
 
@@ -190,13 +181,13 @@ class GraphWidget(pg.PlotWidget):
 		self.updateAxis()	
 
 	def updateAxis(self):
+		#Find time given at x=0
 		h, m, s = [int(string) for string in self.start_time[1:8].split(":")]
 		ms = int(self.start_time[9:11])
 
 		tick_interval = math.floor(self.window_length/5)
 		tick_start = math.floor(self.x_start/tick_interval)*tick_interval
 		x_ticks = np.arange(tick_start, tick_start+15*tick_interval, tick_interval)
-		# x_ticks = np.arange(0, len(self.case["data"][self.name]), tick_interval)
 
 		x_times = []
 		for x in x_ticks:
@@ -220,7 +211,9 @@ class GraphWidget(pg.PlotWidget):
 			elif ms_added < 100:
 				ms_added = f"0{ms_added}"
 
+
 			if tick_interval < 100:
+				#Show milliseconds when viewbox shows < 2s
 				x_times.append(f"{h_added}:{m_added}:{s_added}.{ms_added}")
 			else:
 				x_times.append(f"{h_added}:{m_added}:{s_added}")

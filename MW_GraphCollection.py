@@ -225,19 +225,6 @@ class MW_GraphCollection(qtw.QWidget):
 				self.graphs[signal].getAxis("left").setWidth(w=25)
 				self.graphs[signal].setMouseEnabled(x=True, y=False)
 				self.docks[signal].addWidget(self.graphs[signal])
-
-				# TODO: Try to neatly place a checkbox next to the graphs without fukin shit up
-				# self.widget_wrapper = qtw.QWidget()
-				# self.wrapper_layout = qtw.QHBoxLayout()
-				# self.wrapper_layout.setContentsMargins(0,0,0,0)
-				# self.wrapper_layout.addWidget(self.graphs[signal])
-				# if signal in ["s_ecg", "s_vent", "s_CO2"]:
-				# 	self.wrapper_layout.addWidget(qtw.QCheckBox(f"{signal}"))
-				# 	self.widget_rect = self.widget_wrapper.geometry()
-				# 	self.widget_rect.setWidth(self.widget_rect.width()+50)
-				# 	self.widget_wrapper.setGeometry(self.widget_rect)
-				# self.widget_wrapper.setLayout(self.wrapper_layout)
-				# self.docks[signal].addWidget(self.widget_wrapper)
 		
 		#Loop through plotwidgets and fill with new case data
 		for signal, graphObj in self.graphs.items():
@@ -249,7 +236,6 @@ class MW_GraphCollection(qtw.QWidget):
 		for signal, graphObj in self.graphs.items():
 				graphObj.setXLink(self.graphs["s_vent"])
 
-		#TODO: Fix bug related to toggled-off graphs buggy behavior the next time the program is started
 		#Re-organize the docks in the order they were in when the program was closed
 		if "dockstate" in self.settings.keys():
 			self.dock_area.restoreState(self.settings["dockstate"])

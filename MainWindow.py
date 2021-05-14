@@ -93,7 +93,6 @@ class MainWindow(qtw.QWidget):
 		self.MW_Controls.showTimelines(timelines)
 
 	def receiveNewCase(self, case):
-		#TODO: Fjern eller så må vi hente ut info i DataController.
 		self.initializeWindowSize(case["settings"])
 		self.MW_Controls.createCheckboxes(case["settings"])
 		self.MW_Controls.receiveInputValues(co2=case["metadata"]["t_CO2"], bcg=case["metadata"]["t_bcg"])

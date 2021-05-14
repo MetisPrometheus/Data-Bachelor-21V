@@ -34,6 +34,7 @@ class MainApp(qtw.QApplication):
 		#create datacontroller object to return case data upon request
 		self.data_controller = DataController()
 
+
 		# -------- Signals & Slots --------
 		#Receive filepath from initial window and send it to the datacontroller
 		self.initial_window.settings_submitted[dict].connect(self.data_controller.receiveSettings)
@@ -55,18 +56,14 @@ class MainApp(qtw.QApplication):
 		self.main_window.MW_Controls.overlay_submitted.connect(self.main_window.MW_GraphCollection.toggleOverlay)
 		# self.main_window.overlay_submitted.connect(self.main_window.MW_GraphCollection.toggleOverlay)
 		
-
-		#Timeline stuff
-
+		
+		# -------- Timeline Communication --------
 		#This signal is caught from MW_Controls when Add/Delete/Edit has been clicked
 		self.main_window.MW_Controls.request_timeline_window.connect(self.timeline_window.openWindow)
-		
 		self.main_window.timeline_submitted.connect(self.main_window.MW_GraphCollection.refreshTimeline)
-
 		self.main_window.MW_Controls.timeline_changed.connect(self.main_window.MW_GraphCollection.chooseTimeline)
 		#Send a signal from the timeline window back to MW_Controls to update the dropdown menu
 		self.timeline_window.timeline_submitted.connect(self.main_window.MW_Controls.updateTimelines)
-
 		self.timeline_window.timeline_submitted.connect(self.main_window.updateTimelines)
  
 

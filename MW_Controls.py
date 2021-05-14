@@ -166,10 +166,6 @@ class MW_Controls(qtw.QWidget):
 			self.dropdown_timelines.insertItems(current_index, [timeline])
 			self.dropdown_timelines.setCurrentIndex(current_index)
 			self.dropdown_timelines.blockSignals(False)
-		'''
-		#TODO MAKE SURE ALL THIS IS UPDATED IN ANNOTATIONS OR WHEREVER THE FUCK ITS STORED (Emil/Sebbi)
-		Check MainApp.py, last comment 
-		'''
 
 	def showCheckboxes(self, checkboxes):
 		for element in checkboxes:
@@ -197,11 +193,6 @@ class MW_Controls(qtw.QWidget):
 		self.checkbox_signal.emit(signal, state)
 		
 	def createCheckboxes(self, saved_settings):
-		# for key in data.keys():ar
-		# 	ph = key.split("_")[-1]
-		# 	self.checkboxes[key] = qtw.QCheckBox(f"{ph}", clicked=lambda:self.graphToggler(f"{key}"))
-		# 	self.check_layout.addWidget(self.checkboxes[key])
-
 		#Save potential new data signals passed along with the new case 
 		self.settings = saved_settings
 

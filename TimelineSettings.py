@@ -19,13 +19,8 @@ class TimelineSettings(qtw.QWidget):
 		super().__init__()
 		print("--- Timeline Window Created ---")
 		self.setWindowTitle(" ")
-
 		self.label = qtw.QLabel()
-
 		self.input = qtw.QLineEdit()
-		# regex = qtc.QRegExp("[a-z-A-Z_]")
-		# validator = qtg.QRegExpValidator(regex)
-		# self.input.setValidator(validator)
 
 		self.ok_btn = qtw.QPushButton("Confirm", clicked=self.submit)
 		self.cancel_btn = qtw.QPushButton("Cancel", clicked=self.close)
